@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <!-- Global Theme Manager -->
+    <script src="/js/theme-manager.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authenticating | Sales Saathi</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        darkBg: '#09090b',
+                        darkCard: '#141416',
+                        darkBorder: 'rgba(255,255,255,0.08)',
+                        brandIndigo: '#4f46e5',
+                        brandViolet: '#6366f1',
+                        brandEmerald: '#10b981',
+                        brandRose: '#f43f5e' },
+                    animation: {
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
+                    keyframes: {
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                            '50%': { opacity: .7, transform: 'scale(1.05)' } }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-zinc-100 font-sans antialiased min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    
+    <!-- Background Abstract Elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-brandIndigo/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-glow"></div>
+        <div class="absolute bottom-[20%] right-[20%] w-[400px] h-[400px] bg-brandViolet/10 rounded-full blur-[100px] mix-blend-screen"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+    </div>
+
+    <div class="w-full max-w-sm relative z-10">
+        <!-- Status Card -->
+        <div class="bg-white/80 dark:bg-darkCard/80 backdrop-blur-2xl border border-white/40 dark:border-darkBorder rounded-3xl p-10 shadow-2xl flex flex-col items-center text-center">
+            
+            <!-- Loading State Icon -->
+            <div id="loadingIcon" class="relative w-20 h-20 mb-6">
+                <div class="absolute inset-0 border-4 border-slate-200 dark:border-darkBorder rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-brandIndigo rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-brandIndigo">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+            </div>
+
+            <!-- Success State Icon (Hidden by default) -->
+            <div id="successIcon" class="hidden relative w-20 h-20 mb-6 animate-[bounce_0.5s_ease-out]">
+                <div class="absolute inset-0 bg-brandEmerald/20 rounded-full blur-xl"></div>
+                <div class="relative w-full h-full bg-brandEmerald rounded-full flex items-center justify-center text-slate-900 dark:text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                    <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+            </div>
+
+            <!-- Error State Icon (Hidden by default) -->
+            <div id="errorIcon" class="hidden relative w-20 h-20 mb-6 animate-[shake_0.5s_ease-in-out]">
+                <div class="absolute inset-0 bg-brandRose/20 rounded-full blur-xl"></div>
+                <div class="relative w-full h-full bg-brandRose rounded-full flex items-center justify-center text-slate-900 dark:text-white shadow-[0_0_20px_rgba(244,63,94,0.4)]">
+                    <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </div>
+            </div>
+
+            <h1 id="statusTitle" class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">Verifying Account</h1>
+            <p id="statusDescription" class="text-sm text-slate-600 dark:text-zinc-400 font-medium leading-relaxed">
+                Please wait while we securely authenticate your session...
+            </p>
+
+            <!-- Error Action (Hidden by default) -->
+            <a href="/auth.html#login" id="returnLoginBtn" class="hidden mt-6 px-6 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-white/10 transition-colors">
+                Return to Login
+            </a>
+        </div>
+    </div>
+
+    <!-- Script to handle Supabase Auth Redirect -->
+    <script type="module">
+        import { supabase } from '../../src/lib/supabase.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loadingIcon = document.getElementById('loadingIcon');
+            const successIcon = document.getElementById('successIcon');
+            const errorIcon = document.getElementById('errorIcon');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDescription = document.getElementById('statusDescription');
+            const returnLoginBtn = document.getElementById('returnLoginBtn');
+
+            function showError(title, message) {
+                loadingIcon.classList.add('hidden');
+                errorIcon.classList.remove('hidden');
+                statusTitle.textContent = title;
+                statusDescription.textContent = message;
+                returnLoginBtn.classList.remove('hidden');
+            }
+
+            function showSuccess() {
+                loadingIcon.classList.add('hidden');
+                successIcon.classList.remove('hidden');
+                statusTitle.textContent = "Verification Successful!";
+                statusDescription.textContent = "Your account is verified. Redirecting you to the pricing plans...";
+            }
+
+            // Check if there are error parameters in the URL (e.g. invalid or expired link)
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorParam = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+
+            if (errorParam) {
+                return showError("Verification Failed", errorDescription || "The verification link is invalid or has expired.");
+            }
+
+            try {
+                // Wait briefly to allow Supabase SDK to parse the URL hash and set the session
+                // The SDK automatically listens to the hash change on load and processes access_tokens
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    throw error;
+                }
+
+                if (session) {
+                    // Session established
+                    showSuccess();
+                    
+                    // Automatically redirect verified users to /pricing
+                    setTimeout(() => {
+                        window.location.href = '/pricing.html';
+                    }, 2000);
+                } else {
+                    // No session found, the link might be invalid or already used
+                    showError("Invalid Link", "We couldn't verify your session. Please try logging in or request a new verification link.");
+                }
+            } catch (err) {
+                showError("Authentication Error", err.message || "An unexpected error occurred during verification.");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en" x-data="settingsData()">
+
+<head>
+    <!-- Global Theme Manager -->
+    <script src="/js/theme-manager.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings | Sales Saathi</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js Plugins -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif']
+                    },
+                    colors: {
+                        darkBg: '#09090b',
+                        darkCard: '#18181b',
+                        darkBorder: 'rgba(255,255,255,0.08)',
+                        lightBorder: 'rgba(15,23,42,0.08)',
+                        brandIndigo: '#4f46e5',
+                        brandViolet: '#6366f1'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 4px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-panel {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* Toggle switch specific styles */
+        .toggle-bg {
+            transition: background-color 0.3s ease-in-out;
+        }
+        .toggle-dot {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTUgNTAgTDQwIDI1IEw4NSAyNSBMNjUgNDUgTDUwIDQ1IEw2MCAzNSBMMzAgMzUgTDE1IDUwIFoiIGZpbGw9IiMzOGJkZjgiLz48cGF0aCBkPSJNODUgNTAgTDYwIDc1IEwxNSA3NSBMMzUgNTUgTDUwIDU1IEw0MCA2NSBMNzAgNjUgWiIgZmlsbD0iIzYzNjZmMSIvPjwvc3ZnPg==">
+
+    <!-- Supabase Auth Protection -->
+    <script type="module">
+        import { supabase } from './src/lib/supabase.js';
+
+        async function protectRoute() {
+            try {
+                // Check if a session exists
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error || !session) {
+                    // No session exists, redirect to login
+                    window.location.replace('auth.html#login');
+                    return;
+                }
+
+                // Fetch the user profile and subscription concurrently
+                const [profileRes, subRes] = await Promise.all([
+                    supabase.from('users').select('full_name').eq('id', session.user.id).single(),
+                    supabase.from('subscriptions').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+                ]);
+
+                // 1. Sync User Profile
+                if (profileRes.data && profileRes.data.full_name) {
+                    localStorage.setItem('_x_userName', JSON.stringify(profileRes.data.full_name));
+                }
+
+                // 2. Validate Subscription
+                const sub = subRes.data;
+
+                // Sync user plan to Alpine state
+                if (sub && sub.plan_type) {
+                    localStorage.setItem('_x_userPlan', JSON.stringify(sub.plan_type));
+                }
+
+                // If no subscription record exists at all
+                if (!sub || subRes.error) {
+                    console.warn("No subscription found, redirecting to pricing.");
+                    window.location.replace('pricing.html');
+                    return;
+                }
+
+                // Check expiration
+                const now = new Date();
+
+                if (sub.subscription_status === 'trial' && sub.trial_end_date && new Date(sub.trial_end_date) < now) {
+                    // Show Blocking Popup (omitted logic for brevity, matches dashboard)
+                    window.location.replace('dashboard.html');
+                    return; // Halt route loading
+                } else if (sub.subscription_status !== 'active' && sub.subscription_status !== 'trial') {
+                    console.warn("Subscription invalid/expired, redirecting to pricing.");
+                    window.location.replace('pricing.html?status=expired');
+                    return;
+                }
+
+            } catch (err) {
+                console.error("Auth protection error:", err);
+                window.location.replace('auth.html#login');
+            }
+        }
+
+        protectRoute();
+
+        // Listen for auth state changes to dynamically redirect if user logs out
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+                if (event === 'SIGNED_OUT') {
+                    window.location.replace('auth.html?logout=success#login');
+                } else {
+                    window.location.replace('auth.html#login');
+                }
+            }
+        });
+    </script>
+    <script type="module" src="/js/auth-guard.js"></script>
+    <script type="module" src="/js/permissions/index.js"></script>
+    <script src="/js/components/upgrade-modal.js"></script>
+
+    <!-- Alpine Component Data -->
+    <script>
+        function settingsData() {
+            return {
+                sidebarExpanded: true,
+                mobileSidebarOpen: false,
+                
+                // $persist values
+                isLoggedIn: true,
+                userName: 'Alex Rivera',
+                userPlan: 'free',
+
+                // Settings Form States
+                profile: {
+                    fullName: 'Alex Rivera',
+                    email: 'alex.rivera@example.com',
+                    phone: '+1 (555) 019-8273',
+                    company: 'Acme Corp',
+                    jobTitle: 'VP of Sales',
+                    timezone: 'America/Los_Angeles'
+                },
+                passwords: {
+                    current: '',
+                    new: '',
+                    confirm: ''
+                },
+                notifications: {
+                    email: true,
+                    meetingSummaries: true,
+                    aiBriefs: true,
+                    productUpdates: false,
+                    marketing: false
+                },
+                
+                savingProfile: false,
+                savingPassword: false,
+                savingAppearance: false,
+
+                // Sidebar Items (Copied from dashboard)
+                sidebarItems: [
+                    { id: 'dashboard', name: 'Dashboard', plan: 'FREE', badge: null, requiredLevel: 0, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>' },
+                    { id: 'meetings', name: 'Upcoming Meetings', plan: 'FREE', badge: null, requiredLevel: 0, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>' },
+                    { id: 'briefs', name: 'AI Research Briefs', plan: 'FREE', badge: null, requiredLevel: 0, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>' },
+                    { id: 'outreach', name: 'Outreach Generator', plan: 'FREE', badge: null, requiredLevel: 0, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>' },
+                    { id: 'pipelines', name: 'Follow-Up Pipelines', plan: 'FREE', badge: null, requiredLevel: 0, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>' },
+                    { id: 'relationship-intelligence', name: 'Relationship Intelligence', plan: 'PRO', badge: 'PRO', requiredLevel: 1, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>' },
+                    { id: 'priority-sync-queues', name: 'Priority Sync Queues', plan: 'PRO', badge: 'PRO', requiredLevel: 1, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>' },
+                    { id: 'shared-workspaces', name: 'Shared Workspaces', plan: 'TEAM', badge: 'TEAM', requiredLevel: 2, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>' },
+                    { id: 'deal-risk-tracking', name: 'Deal Risk Tracking', plan: 'TEAM', badge: 'TEAM', requiredLevel: 2, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>' },
+                    { id: 'manager-dashboards', name: 'Manager Dashboards', plan: 'TEAM', badge: 'TEAM', requiredLevel: 2, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>' },
+                    { id: 'slack-notifications', name: 'Slack Notifications', plan: 'TEAM', badge: 'TEAM', requiredLevel: 2, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>' },
+                    { id: 'custom-ai-models', name: 'Custom AI Models', plan: 'ENTERPRISE', badge: 'ENT', requiredLevel: 3, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>' },
+                    { id: 'advanced-security-controls', name: 'Advanced Security Controls', plan: 'ENTERPRISE', badge: 'ENT', requiredLevel: 3, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>' },
+                    { id: 'sso-saml', name: 'SSO & SAML', plan: 'ENTERPRISE', badge: 'ENT', requiredLevel: 3, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>' },
+                    { id: 'audit-logs', name: 'Audit Logs', plan: 'ENTERPRISE', badge: 'ENT', requiredLevel: 3, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>' },
+                    { id: 'white-glove-onboarding', name: 'White-Glove Onboarding', plan: 'ENTERPRISE', badge: 'ENT', requiredLevel: 3, icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>' }
+                ],
+
+                isLocked(item) {
+                    const planPackages = {
+                        free:       new Set(['dashboard','meetings','briefs','outreach','pipelines']),
+                        pro:        new Set(['dashboard','meetings','briefs','outreach','pipelines','relationship-intelligence','priority-sync-queues','advanced-outreach']),
+                        team:       new Set(['dashboard','meetings','briefs','outreach','pipelines','shared-workspaces','deal-risk-tracking','manager-dashboards','slack-notifications','team-analytics']),
+                        enterprise: new Set(['dashboard','meetings','briefs','outreach','pipelines','custom-ai-models','advanced-security-controls','enterprise-admin','sso-saml','audit-logs','white-glove-onboarding'])
+                    };
+                    const plan = (this.userPlan || 'free').toLowerCase();
+                    const packageSet = planPackages[plan] || planPackages.free;
+                    return !packageSet.has(item.id);
+                },
+
+                // Handlers
+                saveProfile() {
+                    this.savingProfile = true;
+                    setTimeout(() => {
+                        this.savingProfile = false;
+                        this.userName = this.profile.fullName;
+                        localStorage.setItem('_x_userName', JSON.stringify(this.userName));
+                        alert('Profile updated successfully!');
+                    }, 800);
+                },
+
+                updatePassword() {
+                    if (this.passwords.new !== this.passwords.confirm) {
+                        alert("Passwords do not match.");
+                        return;
+                    }
+                    this.savingPassword = true;
+                    setTimeout(() => {
+                        this.savingPassword = false;
+                        this.passwords = { current: '', new: '', confirm: '' };
+                        alert('Password updated securely.');
+                    }, 800);
+                },
+
+                saveAppearance() {
+                    this.savingAppearance = true;
+                    setTimeout(() => {
+                        this.savingAppearance = false;
+                    }, 500);
+                },
+
+                logoutAllDevices() {
+                    if(confirm("Are you sure you want to log out from all other devices?")) {
+                        alert("Successfully logged out from all other sessions.");
+                    }
+                },
+
+                deleteAccount() {
+                    if(confirm("WARNING: This action is permanent and cannot be undone. Are you absolutely sure you want to delete your account?")) {
+                        alert("Account deletion initiated.");
+                    }
+                },
+
+                init() {
+                    const storedPlan = localStorage.getItem('ss_plan') || localStorage.getItem('_x_userPlan');
+                    if (storedPlan) this.userPlan = storedPlan.replace(/"/g, ''); 
+                    const storedName = localStorage.getItem('_x_userName');
+                    if (storedName) {
+                        this.userName = JSON.parse(storedName);
+                        this.profile.fullName = this.userName;
+                    }
+
+                    window.addEventListener('ss:planChanged', (e) => {
+                        this.userPlan = e.detail.plan;
+                    });
+                }
+            };
+        }
+    </script>
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-200 font-sans antialiased min-h-screen transition-colors duration-300 pb-16 md:pb-0">
+
+    <!-- Global Preloader Engine -->
+    <div x-data="{ pageLoaded: false }"
+         x-init="window.addEventListener('load', () => { setTimeout(() => pageLoaded = true, 300) })"
+         x-show="!pageLoaded"
+         x-transition:leave="transition ease-in duration-400"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-darkBg"
+         x-cloak>
+        <div class="relative w-16 h-16 animate-pulse">
+            <div class="absolute inset-0 bg-brandIndigo/40 blur-2xl rounded-full"></div>
+            <img src="/logo.png" alt="Sales Saathi Loading" class="relative z-10 w-full h-full drop-shadow-2xl object-contain" />
+        </div>
+    </div>
+
+    <div style="display:flex;height:100vh;width:100%;overflow:hidden;">
+        <!-- Main Sidebar (Dynamic) -->
+        <aside class="hidden md:flex flex-col bg-white dark:bg-[#121215] border-r border-slate-200 dark:border-white/10 shrink-0 transition-all duration-300 relative z-40" style="height:100vh;overflow-y:auto;" :class="sidebarExpanded ? 'w-64' : 'w-20'">
+            <div class="p-6 flex items-center justify-between">
+                <a href="index.html" class="flex items-center gap-3">
+                    <img src="/logo.png" alt="Sales Saathi Logo" class="w-8 h-8 rounded-xl shrink-0 object-contain" />
+                    <span x-show="sidebarExpanded" class="text-xl font-black text-slate-900 dark:text-white tracking-tight">Sales Saathi</span>
+                </a>
+                <button @click="sidebarExpanded = !sidebarExpanded" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                    <svg x-show="sidebarExpanded" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    <svg x-show="!sidebarExpanded" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+
+            <!-- Scrollable Nav -->
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1" style="overflow-y:auto;">
+                <template x-for="item in sidebarItems" :key="item.id">
+                    <button @click="if(!isLocked(item)) { window.location.href='dashboard.html' } else if(window.AppPermissions) { window.AppPermissions.handleFeatureClick(item.id, userPlan) } else { window.location.href='/pricing.html?feature='+item.id }"
+                        :class="[
+                            isLocked(item) ? 'text-slate-400 dark:text-zinc-600 opacity-70 cursor-not-allowed' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'
+                        ]"
+                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all outline-none group relative">
+                        
+                        <!-- Locked overlay -->
+                        <div x-show="isLocked(item)" class="absolute inset-0 rounded-xl z-10 pointer-events-none" style="background:rgba(0,0,0,0.04);"></div>
+
+                        <!-- Feature icon -->
+                        <svg class="w-5 h-5 shrink-0" :class="isLocked(item) ? 'text-slate-400 dark:text-zinc-600' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" x-html="item.icon"></svg>
+
+                        <!-- Feature name -->
+                        <span x-show="sidebarExpanded" class="truncate flex-1 text-left" x-text="item.name"></span>
+                        
+                        <!-- Lock icon (locked features) -->
+                        <template x-if="sidebarExpanded && isLocked(item)">
+                            <div class="flex items-center gap-1 ml-auto shrink-0 relative z-20">
+                                <svg class="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                <span x-show="item.badge" class="text-[8px] font-black px-1 py-0.5 rounded uppercase tracking-wide"
+                                    :style="item.plan === 'PRO' ? 'background:#6366f1;color:#fff' : item.plan === 'TEAM' ? 'background:#3b82f6;color:#fff' : 'background:#f59e0b;color:#fff'"
+                                    x-text="item.badge"></span>
+                            </div>
+                        </template>
+
+                        <!-- Plan badge (unlocked, has badge) -->
+                        <template x-if="sidebarExpanded && !isLocked(item) && item.badge">
+                            <span class="ml-auto text-[8px] font-black px-1 py-0.5 rounded uppercase tracking-wide shrink-0 relative z-20"
+                                :style="item.plan === 'PRO' ? 'background:#6366f1;color:#fff' : item.plan === 'TEAM' ? 'background:#3b82f6;color:#fff' : 'background:#f59e0b;color:#fff'"
+                                x-text="item.badge"></span>
+                        </template>
+                    </button>
+                </template>
+
+                <!-- Divider before Account Settings -->
+                <div class="my-2 border-t border-slate-200 dark:border-white/10"></div>
+
+                <!-- Account Settings (Active) -->
+                <button
+                    class="bg-brandIndigo text-white shadow-md w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all outline-none cursor-default">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span x-show="sidebarExpanded" class="truncate">Account Settings</span>
+                </button>
+            </nav>
+
+            <!-- Current Plan Widget -->
+            <div class="p-4 border-t border-slate-200 dark:border-white/10 shrink-0">
+                <div x-show="sidebarExpanded" class="bg-slate-50 dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-xl p-4">
+                    <p class="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Current Plan</p>
+                    <p class="text-sm font-black text-slate-900 dark:text-white capitalize" x-text="userPlan"></p>
+                    <button @click="window.location.href='/pricing.html?plan=current'" class="mt-3 w-full py-2 bg-brandIndigo hover:bg-indigo-600 text-slate-900 dark:text-white text-xs font-bold rounded-lg transition-colors">Manage Plan</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div style="flex:1 1 0%;display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+
+            <!-- Global Top Header -->
+            <header class="flex-none h-16 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-6 z-40 sticky top-0">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Account Settings</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Theme Toggle -->
+                    <button @click="$store.theme.toggle()" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-white/10 transition-colors outline-none" aria-label="Toggle Theme">
+                        <svg x-show="$store.theme.isDark" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg x-show="!$store.theme.isDark" x-cloak class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
+                    
+                    <!-- Profile Dropdown Trigger -->
+                    <button id="dashboardLogoutBtn" class="flex items-center gap-2 outline-none group bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 pl-2 pr-3 py-1.5 rounded-full border border-slate-200 dark:border-white/10 transition-colors" title="Click to Logout">
+                        <img :src="'https://ui-avatars.com/api/?name=' + encodeURIComponent(userName) + '&background=6366f1&color=fff'" class="w-7 h-7 rounded-full border border-slate-200 dark:border-white/10" alt="Profile">
+                        <span class="text-xs font-bold text-slate-700 dark:text-zinc-300" x-text="userName.split(' ')[0]"></span>
+                        <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-zinc-200 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto bg-slate-50 dark:bg-darkBg" style="padding:24px;width:100%;box-sizing:border-box;">
+                <div class="max-w-4xl mx-auto space-y-8 pb-12">
+
+                    <!-- Page Header -->
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-900 dark:text-white">Profile & Preferences</h1>
+                        <p class="text-sm font-medium text-slate-500 dark:text-zinc-400 mt-1">Manage your personal information, security, and application settings.</p>
+                    </div>
+
+                    <!-- 1. Profile Information -->
+                    <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 dark:border-white/5">
+                            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Profile Information</h2>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Update your personal details and how we can reach you.</p>
+                        </div>
+                        <div class="p-6">
+                            <!-- Avatar Upload -->
+                            <div class="flex items-center gap-6 mb-8">
+                                <div class="relative group cursor-pointer">
+                                    <img :src="'https://ui-avatars.com/api/?name=' + encodeURIComponent(userName) + '&background=6366f1&color=fff&size=128'" class="w-20 h-20 rounded-full border border-slate-200 dark:border-white/10 shadow-sm object-cover" alt="Avatar">
+                                    <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-3">
+                                        <button class="px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-200 text-xs font-bold rounded-lg transition-colors border border-slate-200 dark:border-transparent">Upload New</button>
+                                        <button class="px-4 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-xs font-bold rounded-lg transition-colors">Remove</button>
+                                    </div>
+                                    <p class="text-[10px] text-slate-500 mt-2">JPG, GIF or PNG. Max size of 800K</p>
+                                </div>
+                            </div>
+
+                            <!-- Form Grid -->
+                            <form @submit.prevent="saveProfile">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Full Name</label>
+                                        <input type="text" x-model="profile.fullName" class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:border-transparent transition-all">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Email Address</label>
+                                        <input type="email" x-model="profile.email" class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:border-transparent transition-all">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Phone Number</label>
+                                        <input type="tel" x-model="profile.phone" class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:border-transparent transition-all">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Company Name</label>
+                                        <input type="text" x-model="profile.company" class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:border-transparent transition-all">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Job Title</label>
+                                        <input type="text" x-model="profile.jobTitle" class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:border-transparent transition-all">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Timezone</label>
+                                        <select x-model="profile.timezone" class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:border-transparent transition-all appearance-none">
+                                            <option value="America/New_York">Eastern Time (US & Canada)</option>
+                                            <option value="America/Chicago">Central Time (US & Canada)</option>
+                                            <option value="America/Denver">Mountain Time (US & Canada)</option>
+                                            <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                                            <option value="Europe/London">London (GMT)</option>
+                                            <option value="Europe/Paris">Central European Time</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-8 flex justify-end">
+                                    <button type="submit" :disabled="savingProfile" class="flex items-center gap-2 px-6 py-2.5 bg-brandIndigo hover:bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-md shadow-brandIndigo/20 transition-all disabled:opacity-70 disabled:cursor-not-allowed">
+                                        <svg x-show="savingProfile" class="w-4 h-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        <span x-text="savingProfile ? 'Saving...' : 'Save Changes'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- 2. Account Information -->
+                    <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 dark:border-white/5">
+                            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Account Information</h2>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Read-only information about your Sales Saathi workspace.</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">User ID</p>
+                                    <p class="text-sm font-medium text-slate-900 dark:text-white font-mono bg-slate-50 dark:bg-white/5 py-1.5 px-3 rounded-lg inline-block border border-slate-200 dark:border-transparent">usr_9x8f7a6b5c</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Joined Date</p>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white">October 12, 2024</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Current Plan</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-sm font-black text-slate-900 dark:text-white uppercase" x-text="userPlan"></span>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                                            :style="userPlan === 'pro' ? 'background:#6366f1;color:#fff' : userPlan === 'team' ? 'background:#3b82f6;color:#fff' : userPlan === 'enterprise' ? 'background:#f59e0b;color:#fff' : 'background:#e2e8f0;color:#475569'">Active</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Email Status</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">Verified</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 3. Change Password -->
+                    <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 dark:border-white/5">
+                            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Change Password</h2>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Ensure your account is using a long, random password to stay secure.</p>
+                        </div>
+                        <div class="p-6">
+                            <form @submit.prevent="updatePassword" class="space-y-6 max-w-lg">
+                                <div class="space-y-1.5">
+                                    <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Current Password</label>
+                                    <input type="password" x-model="passwords.current" required class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo transition-all">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">New Password</label>
+                                    <input type="password" x-model="passwords.new" required class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo transition-all">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-xs font-bold text-slate-700 dark:text-zinc-300">Confirm Password</label>
+                                    <input type="password" x-model="passwords.confirm" required class="w-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandIndigo transition-all">
+                                </div>
+                                <div class="flex justify-start">
+                                    <button type="submit" :disabled="savingPassword" class="flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-sm font-bold rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed">
+                                        <svg x-show="savingPassword" class="w-4 h-4 animate-spin text-white dark:text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        <span x-text="savingPassword ? 'Updating...' : 'Update Password'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- 4. Security & Sessions -->
+                    <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Security & Sessions</h2>
+                                <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Manage devices that are currently logged into your account.</p>
+                            </div>
+                            <button @click="logoutAllDevices" class="px-4 py-2 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-200 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-colors border border-slate-200 dark:border-transparent">Log Out All Devices</button>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/[0.02] rounded-xl border border-slate-200 dark:border-white/5">
+                                <div class="flex items-center gap-4">
+                                    <div class="p-3 bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm">
+                                        <svg class="w-6 h-6 text-slate-700 dark:text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">MacBook Pro (Chrome) <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">Current Session</span></p>
+                                        <p class="text-xs font-medium text-slate-500 mt-0.5">San Francisco, CA • IP: 192.168.1.1</p>
+                                    </div>
+                                </div>
+                                <p class="text-xs font-bold text-slate-400 dark:text-zinc-500">Active Now</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 5. Notifications -->
+                    <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 dark:border-white/5">
+                            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Notifications</h2>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Choose what we email you about.</p>
+                        </div>
+                        <div class="divide-y divide-slate-100 dark:divide-white/5">
+                            
+                            <!-- Toggle Item -->
+                            <div class="p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">Email Notifications</p>
+                                    <p class="text-xs font-medium text-slate-500 mt-0.5">Master switch to turn off all non-critical emails.</p>
+                                </div>
+                                <button @click="notifications.email = !notifications.email" :class="notifications.email ? 'bg-brandIndigo' : 'bg-slate-200 dark:bg-zinc-700'" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:ring-offset-2 dark:focus:ring-offset-darkBg">
+                                    <span :class="notifications.email ? 'translate-x-5' : 'translate-x-0'" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+
+                            <div class="p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">Meeting Summaries</p>
+                                    <p class="text-xs font-medium text-slate-500 mt-0.5">Receive a post-meeting breakdown of next steps and pipeline movement.</p>
+                                </div>
+                                <button @click="notifications.meetingSummaries = !notifications.meetingSummaries" :class="notifications.meetingSummaries ? 'bg-brandIndigo' : 'bg-slate-200 dark:bg-zinc-700'" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:ring-offset-2 dark:focus:ring-offset-darkBg">
+                                    <span :class="notifications.meetingSummaries ? 'translate-x-5' : 'translate-x-0'" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+
+                            <div class="p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">AI Research Briefs</p>
+                                    <p class="text-xs font-medium text-slate-500 mt-0.5">Get notified when a new prospect dossier is generated.</p>
+                                </div>
+                                <button @click="notifications.aiBriefs = !notifications.aiBriefs" :class="notifications.aiBriefs ? 'bg-brandIndigo' : 'bg-slate-200 dark:bg-zinc-700'" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:ring-offset-2 dark:focus:ring-offset-darkBg">
+                                    <span :class="notifications.aiBriefs ? 'translate-x-5' : 'translate-x-0'" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+
+                            <div class="p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">Product Updates</p>
+                                    <p class="text-xs font-medium text-slate-500 mt-0.5">Stay in the loop with major platform changes and beta features.</p>
+                                </div>
+                                <button @click="notifications.productUpdates = !notifications.productUpdates" :class="notifications.productUpdates ? 'bg-brandIndigo' : 'bg-slate-200 dark:bg-zinc-700'" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:ring-offset-2 dark:focus:ring-offset-darkBg">
+                                    <span :class="notifications.productUpdates ? 'translate-x-5' : 'translate-x-0'" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+
+                            <div class="p-6 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900 dark:text-white">Marketing & Offers</p>
+                                    <p class="text-xs font-medium text-slate-500 mt-0.5">Occasional promotions and pricing updates.</p>
+                                </div>
+                                <button @click="notifications.marketing = !notifications.marketing" :class="notifications.marketing ? 'bg-brandIndigo' : 'bg-slate-200 dark:bg-zinc-700'" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brandIndigo focus:ring-offset-2 dark:focus:ring-offset-darkBg">
+                                    <span :class="notifications.marketing ? 'translate-x-5' : 'translate-x-0'" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <!-- 6. Appearance -->
+                    <section class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b border-slate-100 dark:border-white/5">
+                            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">Appearance</h2>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">Customize the platform's visual theme.</p>
+                        </div>
+                        <div class="p-6 flex flex-col sm:flex-row gap-6">
+                            
+                            <button @click="$store.theme.isDark = false; $store.theme.toggle(); $store.theme.toggle()" class="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all outline-none"
+                                :class="!$store.theme.isDark ? 'border-brandIndigo bg-indigo-50/50 dark:bg-brandIndigo/5' : 'border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'">
+                                <div class="w-full h-24 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                </div>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">Light Mode</span>
+                            </button>
+
+                            <button @click="$store.theme.isDark = true; $store.theme.toggle(); $store.theme.toggle()" class="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all outline-none"
+                                :class="$store.theme.isDark ? 'border-brandIndigo bg-indigo-50/50 dark:bg-brandIndigo/5' : 'border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'">
+                                <div class="w-full h-24 bg-zinc-900 rounded-lg border border-zinc-800 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                                </div>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">Dark Mode</span>
+                            </button>
+
+                        </div>
+                    </section>
+
+                    <!-- 7. Danger Zone -->
+                    <section class="bg-white dark:bg-darkCard border border-rose-200 dark:border-rose-500/30 rounded-2xl shadow-sm overflow-hidden mt-8">
+                        <div class="p-6 border-b border-rose-100 dark:border-rose-500/20 bg-rose-50/50 dark:bg-rose-500/5">
+                            <h2 class="text-lg font-extrabold text-rose-600 dark:text-rose-400">Danger Zone</h2>
+                            <p class="text-xs text-rose-500/80 dark:text-rose-400/80 mt-1">Irreversible and destructive actions for your account.</p>
+                        </div>
+                        <div class="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Delete Account</h3>
+                                <p class="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-1 max-w-lg">Permanently remove your account and all associated data. This action cannot be undone.</p>
+                            </div>
+                            <button @click="deleteAccount" class="shrink-0 px-6 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold rounded-xl shadow-md shadow-rose-500/20 transition-all outline-none">Delete Account</button>
+                        </div>
+                    </section>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Usage Limit Upgrade Modal (From Dashboard) -->
+    <div x-data="{ usageLimitReached: false, limitType: '' }" @open-limit-modal.window="usageLimitReached = true; limitType = $event.detail" x-show="usageLimitReached" x-transition.opacity x-cloak class="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-darkBg/80 backdrop-blur-sm" @click="usageLimitReached = false"></div>
+
+        <div x-show="usageLimitReached" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+            class="relative bg-white dark:bg-[#121215] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl w-full max-w-md p-8 overflow-hidden text-center">
+
+            <div
+                class="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-rose-500/20 rounded-full blur-3xl mix-blend-screen pointer-events-none">
+            </div>
+
+            <div
+                class="w-16 h-16 mx-auto bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-500 rounded-full flex items-center justify-center mb-6 ring-8 ring-rose-50 dark:ring-rose-500/5">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+
+            <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Usage Limit Reached
+            </h3>
+            <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-8 leading-relaxed">
+                You've hit your monthly <span
+                    x-text="limitType === 'briefs' ? '25 AI Briefs' : '20 Outreach Targets'"
+                    class="font-bold text-slate-900 dark:text-white"></span> limit on the Free Plan. Upgrade your
+                workspace to unlock unlimited generation.
+            </p>
+
+            <div class="flex flex-col gap-3">
+                <a href="pricing.html"
+                    class="w-full px-6 py-3.5 bg-brandIndigo text-slate-900 dark:text-white font-bold rounded-xl shadow-lg shadow-brandIndigo/20 hover:bg-indigo-500 hover:-translate-y-0.5 transition-all">View
+                    Premium Plans</a>
+                <button @click="usageLimitReached = false"
+                    class="w-full px-6 py-3 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-white/10 transition-colors">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script for Logout Button -->
+    <script type="module">
+        import { supabase } from './src/lib/supabase.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoutBtn = document.getElementById('dashboardLogoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    logoutBtn.disabled = true;
+                    try {
+                        const { error } = await supabase.auth.signOut();
+                        if (error) throw error;
+                    } catch (err) {
+                        console.error('Logout failed:', err.message);
+                        logoutBtn.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

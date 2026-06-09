@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ 
+    activeView: 'autopilot', 
+    sidebarExpanded: true, 
+    mobileSidebarOpen: false, 
+    isLoggedIn: $persist(true), 
+    userName: $persist('Alex Rivera'),
+    profileOpen: false,
+    searchQuery: '',
+    uploadStatus: 'Idle'
+}" >
+<head>
+    <!-- Global Theme Manager -->
+    <script src="/js/theme-manager.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Autopilot | Sales Saathi</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        darkBg: '#09090b', darkCard: '#18181b', darkBorder: 'rgba(255,255,255,0.08)',
+                        lightBorder: 'rgba(15,23,42,0.08)', brandIndigo: '#4f46e5', brandViolet: '#6366f1' }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); }
+        .glass-panel { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTUgNTAgTDQwIDI1IEw4NSAyNSBMNjUgNDUgTDUwIDQ1IEw2MCAzNSBMMzAgMzUgTDE1IDUwIFoiIGZpbGw9IiMzOGJkZjgiLz48cGF0aCBkPSJNODUgNTAgTDYwIDc1IEwxNSA3NSBMMzUgNTUgTDUwIDU1IEw0MCA2NSBMNzAgNjUgWiIgZmlsbD0iIzYzNjZmMSIvPjwvc3ZnPg==">
+    <script type="module" src="/js/auth-guard.js"></script>
+    <script type="module" src="/js/permissions/index.js"></script>
+    <script type="module">
+        import { getPlanLevel } from './js/permissions/plans.js';
+        document.addEventListener('auth-guard:passed', () => {
+            const userPlan = JSON.parse(localStorage.getItem('_x_userPlan')) || 'free';
+            if (getPlanLevel(userPlan) < getPlanLevel('team')) {
+                window.location.replace('/pricing.html?upgrade_from=' + userPlan + '&feature=ai-autopilot');
+            }
+        });
+    </script>
+    <script src="/js/components/upgrade-modal.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-200 font-sans antialiased min-h-screen flex flex-col transition-colors duration-300 overflow-x-hidden pb-16 md:pb-0">
+
+    <!-- Global Preloader Engine -->
+    <div x-data="{ pageLoaded: false }" x-init="window.addEventListener('load', () => { setTimeout(() => pageLoaded = true, 300) })" x-show="!pageLoaded" x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-darkBg" x-cloak>
+        <div class="relative w-16 h-16 animate-pulse">
+            <div class="absolute inset-0 bg-brandIndigo/40 blur-2xl rounded-full"></div>
+            <img src="/logo.png" alt="Sales Saathi Loading" class="relative z-10 w-full h-full drop-shadow-2xl object-contain" />
+        </div>
+    </div>
+
+    <!-- Header identical to dashboard.html -->
+        <!-- SECTION 1: Dynamic Global Header Mount -->
+    <div id="global-header-mount"></div>
+    <script type="module" src="/js/auth-manager.js"></script>
+    <script type="module" src="/js/header-manager.js"></script>
+
+    <div class="flex flex-1 w-full relative">
+        <!-- Sidebar Navigation -->
+        <aside class="hidden md:flex flex-col border-r border-slate-200 dark:border-white/10 bg-white/50 dark:bg-[#09090b]/50 glass-panel shrink-0 transition-all duration-300 z-30 sticky top-0 h-screen" :class="sidebarExpanded ? 'w-64' : 'w-20 items-center'">
+            <div class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-1.5 w-full">
+                <button @click="sidebarExpanded = !sidebarExpanded" class="w-full flex items-center justify-center p-2 mb-4 text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-white/5 transition-colors outline-none">
+                    <svg x-show="sidebarExpanded" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    <svg x-show="!sidebarExpanded" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- AI Autopilot Node -->
+                <a href="ai-autopilot.html" :class="activeView === 'autopilot' ? 'bg-brandIndigo text-slate-900 dark:text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-white/5 bg-transparent'" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all outline-none group">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span x-show="sidebarExpanded">AI Autopilot</span>
+                </a>
+                
+                <a href="dashboard.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-white/5 transition-all outline-none group">
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    <span x-show="sidebarExpanded">Command Center</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-8 xl:p-10 relative overflow-y-auto">
+            <div class="w-full max-w-[1600px] mx-auto space-y-8 animate-[fadeIn_0.3s_ease-out]">
+                
+                <!-- B. Viewport Header Section -->
+                <section class="flex flex-col gap-6">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">SalesSaathi AI Autopilot</h1>
+                        <p class="text-sm font-medium text-slate-500 dark:text-zinc-400 mt-2">Your AI sales copilot for research, meetings, deal analysis and follow-ups.</p>
+                    </div>
+                    
+                    <!-- Quick Action Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-left shadow-sm hover:border-brandIndigo hover:-translate-y-1 hover:shadow-md transition-all group outline-none" onclick="document.getElementById('aiMessageInput').value='Generate brief for '; document.getElementById('aiMessageInput').focus()">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-brandIndigo/10 text-brandIndigo flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-brandIndigo transition-colors">Generate Research Brief</h3>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 font-medium">Pre-call intelligence extraction</p>
+                        </button>
+                        
+                        <button class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-left shadow-sm hover:border-brandViolet hover:-translate-y-1 hover:shadow-md transition-all group outline-none" onclick="document.getElementById('aiMessageInput').value='Analyze my last meeting: '; document.getElementById('aiMessageInput').focus()">
+                            <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-brandViolet/10 text-brandViolet flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-brandViolet transition-colors">Analyze Meeting</h3>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 font-medium">Transcribe & extract action items</p>
+                        </button>
+
+                        <button class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-left shadow-sm hover:border-emerald-500 hover:-translate-y-1 hover:shadow-md transition-all group outline-none" onclick="document.getElementById('aiMessageInput').value='Create follow-up email for '; document.getElementById('aiMessageInput').focus()">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-500 transition-colors">Create Follow-up Email</h3>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 font-medium">Context-aware drafting</p>
+                        </button>
+
+                        <button class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 text-left shadow-sm hover:border-rose-500 hover:-translate-y-1 hover:shadow-md transition-all group outline-none" onclick="document.getElementById('aiMessageInput').value='Show deal risks for '; document.getElementById('aiMessageInput').focus()">
+                            <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-rose-500 transition-colors">Deal Risk Analysis</h3>
+                            <p class="text-xs text-slate-500 dark:text-zinc-400 font-medium">Predict churn and ghosting</p>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- C. Main Application Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-10 gap-8 h-[calc(100vh-280px)] min-h-[600px]">
+                    
+                    <!-- Left Column (70%) -->
+                    <section class="lg:col-span-7 bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-3xl shadow-sm flex flex-col overflow-hidden">
+                        
+                        <!-- Conversation Window -->
+                        <div id="aiChatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
+                            <!-- Initial Greeting -->
+                            <div class="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-sm p-4 max-w-[85%] self-start shadow-sm relative flex flex-col gap-1">
+                                <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">Hi Alex! I'm your SalesSaathi AI Copilot. How can I assist you with your pipeline today?</p>
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 self-start mt-1">AI Assistant</span>
+                            </div>
+                            
+                            <!-- Hidden Loading Indicator -->
+                            <div id="aiLoadingIndicator" class="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-sm p-4 max-w-fit self-start shadow-sm items-center gap-3 hidden">
+                                <div class="flex gap-1.5 items-center h-4">
+                                    <span class="w-1.5 h-1.5 bg-brandIndigo/60 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                                    <span class="w-1.5 h-1.5 bg-brandIndigo/60 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                                    <span class="w-1.5 h-1.5 bg-brandIndigo/60 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                                </div>
+                                <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Processing</span>
+                            </div>
+                        </div>
+
+                        <!-- Suggested Prompts wrapper -->
+                        <div class="px-6 py-3 overflow-x-auto whitespace-nowrap flex items-center gap-2 border-t border-slate-100 dark:border-white/5 scrollbar-hide">
+                            <button onclick="document.getElementById('aiMessageInput').value='Generate brief for Tesla'; document.getElementById('aiMessageInput').focus()" class="inline-flex items-center px-3 py-1.5 rounded-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-brandIndigo/5 hover:text-brandIndigo hover:border-brandIndigo/30 transition-colors outline-none shrink-0">
+                                Generate brief for Tesla
+                            </button>
+                            <button onclick="document.getElementById('aiMessageInput').value='Analyze my last meeting'; document.getElementById('aiMessageInput').focus()" class="inline-flex items-center px-3 py-1.5 rounded-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-brandIndigo/5 hover:text-brandIndigo hover:border-brandIndigo/30 transition-colors outline-none shrink-0">
+                                Analyze my last meeting
+                            </button>
+                            <button onclick="document.getElementById('aiMessageInput').value='Create follow-up email'; document.getElementById('aiMessageInput').focus()" class="inline-flex items-center px-3 py-1.5 rounded-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-brandIndigo/5 hover:text-brandIndigo hover:border-brandIndigo/30 transition-colors outline-none shrink-0">
+                                Create follow-up email
+                            </button>
+                            <button onclick="document.getElementById('aiMessageInput').value='Show deal risks'; document.getElementById('aiMessageInput').focus()" class="inline-flex items-center px-3 py-1.5 rounded-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-brandIndigo/5 hover:text-brandIndigo hover:border-brandIndigo/30 transition-colors outline-none shrink-0">
+                                Show deal risks
+                            </button>
+                            <button onclick="document.getElementById('aiMessageInput').value='Prepare discovery questions'; document.getElementById('aiMessageInput').focus()" class="inline-flex items-center px-3 py-1.5 rounded-full bg-slate-50 dark:bg-[#09090b] border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-brandIndigo/5 hover:text-brandIndigo hover:border-brandIndigo/30 transition-colors outline-none shrink-0">
+                                Prepare discovery questions
+                            </button>
+                        </div>
+
+                        <!-- Chat Input Sub-system -->
+                        <div class="p-4 bg-slate-50 dark:bg-[#09090b] border-t border-slate-200 dark:border-white/10">
+                            <div class="relative bg-white dark:bg-darkCard border border-slate-200 dark:border-white/20 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-brandIndigo/50 focus-within:border-brandIndigo transition-all flex items-end">
+                                <textarea id="aiMessageInput" rows="1" placeholder="Ask SalesSaathi AI anything..." class="w-full bg-transparent border-0 py-4 pl-5 pr-14 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 resize-none outline-none max-h-32 focus:ring-0 leading-relaxed"></textarea>
+                                <button id="sendAiMessage" class="absolute right-2 bottom-2 p-2 bg-brandIndigo text-slate-900 dark:text-white rounded-xl hover:bg-indigo-500 transition-colors shadow-sm outline-none">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                                </button>
+                            </div>
+                            <p class="text-center text-[10px] font-semibold text-slate-400 dark:text-zinc-500 mt-3 uppercase tracking-widest">Shift + Enter for new line â€¢ Enter to send</p>
+                        </div>
+                    </section>
+                    
+                    <!-- Right Column (30%) -->
+                    <section class="lg:col-span-3 flex flex-col gap-6 overflow-y-auto pr-2 scrollbar-hide pb-10">
+                        
+                        <!-- Media Ingestion Card -->
+                        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+                            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-brandViolet" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                                Upload Meeting Recording
+                            </h3>
+                            <div class="border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-brandIndigo dark:hover:border-brandIndigo/50 rounded-xl p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer group" onclick="document.getElementById('meetingUploadBtn').click()">
+                                <div class="w-10 h-10 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center mb-3 group-hover:bg-brandIndigo/10 group-hover:text-brandIndigo transition-colors text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l-2.293 2.293a1 1 0 11-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 6v13a1 1 0 11-2 0z"/></svg>
+                                </div>
+                                <p class="text-xs font-bold text-slate-900 dark:text-white mb-1">Click to upload or drag & drop</p>
+                                <p class="text-[10px] font-medium text-slate-500 dark:text-zinc-500 uppercase tracking-widest">.MP3, .WAV, .MP4 (Max 100MB)</p>
+                                <input type="file" id="meetingUploadBtn" class="hidden" accept=".mp3,.wav,.mp4" @change="uploadStatus = 'Uploading...'; setTimeout(() => { uploadStatus = 'Success'; }, 2000)">
+                            </div>
+                            <div class="mt-3 flex items-center justify-between px-1">
+                                <span class="text-xs font-bold text-slate-500 dark:text-zinc-400">Status:</span>
+                                <span id="uploadStatus" class="text-xs font-bold px-2 py-0.5 rounded" :class="{ 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400': uploadStatus === 'Success', 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400': uploadStatus === 'Uploading...', 'text-slate-600 dark:text-zinc-300': uploadStatus === 'Idle' }" x-text="uploadStatus"></span>
+                            </div>
+                        </div>
+
+                        <!-- Data Aggregation Widgets -->
+                        <!-- 1. Recent AI Conversations -->
+                        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+                            <h3 class="text-xs font-extrabold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Recent AI Conversations</h3>
+                            <div class="space-y-3">
+                                <a href="#" class="block p-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-slate-200 dark:bg-white/10 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-200 dark:border-white/10">
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white mb-1 truncate">TechFlow Enterprise Deal Strategy</p>
+                                    <p class="text-[10px] font-medium text-slate-500 dark:text-zinc-400">2 hours ago â€¢ 14 messages</p>
+                                </a>
+                                <a href="#" class="block p-3 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-slate-200 dark:bg-white/10 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-200 dark:border-white/10">
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white mb-1 truncate">Acme Corp Q3 Objection Handling</p>
+                                    <p class="text-[10px] font-medium text-slate-500 dark:text-zinc-400">Yesterday â€¢ 8 messages</p>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- 2. Saved Research Briefs -->
+                        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+                            <h3 class="text-xs font-extrabold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Saved Research Briefs</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-white/5">
+                                    <div>
+                                        <p class="text-xs font-bold text-brandIndigo dark:text-indigo-400 mb-0.5 flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Globex Logistics</p>
+                                        <p class="text-[10px] font-medium text-slate-500 dark:text-zinc-400">C-Suite Profile Map</p>
+                                    </div>
+                                    <button class="text-slate-400 hover:text-brandIndigo transition-colors"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Meeting Analysis History -->
+                        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+                            <h3 class="text-xs font-extrabold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Meeting Analysis History</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-900 dark:text-white">Initech Discovery Call</p>
+                                        <p class="text-[10px] font-medium text-slate-500 dark:text-zinc-400">4 Action items extracted</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. AI Generated Follow-ups -->
+                        <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+                            <h3 class="text-xs font-extrabold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Generated Follow-ups</h3>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-slate-50 dark:bg-[#09090b] rounded-xl border border-slate-100 dark:border-white/5">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Drafted for Sarah Jenkins</p>
+                                    <p class="text-xs font-medium text-slate-600 dark:text-zinc-300 line-clamp-2">"Hi Sarah, great connecting today. I've attached the ROI calculator we discussed regarding the..."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script connection to ai-autopilot.js module -->
+    <script type="module">
+        import { sendMessage } from './js/ai-autopilot.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('aiMessageInput');
+            const sendBtn = document.getElementById('sendAiMessage');
+
+            // Handle Textarea auto-resize
+            input.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Keyboard listeners for Chat Input Sub-system
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                    input.style.height = 'auto'; // reset height
+                }
+            });
+
+            // Button listener
+            sendBtn.addEventListener('click', () => {
+                sendMessage();
+                input.style.height = 'auto'; // reset height
+            });
+        });
+    </script>
+</body>
+</html>
+

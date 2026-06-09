@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <!-- Global Theme Manager -->
+    <script src="/js/theme-manager.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Code | Sales Saathi</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        darkBg: '#09090b',
+                        darkCard: '#141416',
+                        darkBorder: 'rgba(255,255,255,0.08)',
+                        brandIndigo: '#4f46e5',
+                        brandViolet: '#6366f1',
+                        brandEmerald: '#10b981' },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shimmer': 'shimmer 2s infinite linear',
+                        'slide-up': 'slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' } },
+                        'pulse-glow': {
+                            '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                            '50%': { opacity: .7, transform: 'scale(1.05)' } },
+                        shimmer: {
+                            '100%': { transform: 'translateX(100%)' }
+                        },
+                        'slide-up': {
+                            '0%': { opacity: 0, transform: 'translateY(30px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        /* Hide spinner controls on number inputs */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-zinc-100 font-sans antialiased min-h-screen flex items-center justify-center p-4 relative overflow-hidden selection:bg-brandIndigo selection:text-white">
+    
+    <!-- Background Abstract Elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-brandIndigo/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-glow"></div>
+        <div class="absolute bottom-[20%] right-[20%] w-[400px] h-[400px] bg-brandViolet/10 rounded-full blur-[100px] mix-blend-screen"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="w-full max-w-[420px] relative z-10 opacity-0 animate-slide-up">
+        
+        <!-- Glassmorphism Card -->
+        <div class="bg-white/80 dark:bg-darkCard/80 glass-card border border-white/40 dark:border-darkBorder rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden group">
+            
+            <!-- Shimmer effect overlay -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none"></div>
+
+            <div class="flex flex-col items-center text-center relative z-10">
+                
+                <!-- Animated Icon Container -->
+                <div class="relative w-24 h-24 mb-8 animate-float">
+                    <div class="absolute inset-0 bg-brandIndigo/30 rounded-full blur-xl animate-pulse-glow"></div>
+                    <div class="relative w-full h-full bg-gradient-to-br from-brandIndigo to-brandViolet rounded-2xl flex items-center justify-center shadow-xl border border-slate-200 dark:border-white/10 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                        <svg class="w-10 h-10 text-slate-900 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        
+                        <!-- Notification Badge Ping -->
+                        <div class="absolute -top-2 -right-2 w-7 h-7 bg-brandEmerald rounded-full border-[3px] border-white dark:border-[#141416] flex items-center justify-center shadow-lg">
+                            <div class="absolute w-full h-full bg-brandEmerald rounded-full animate-ping opacity-75"></div>
+                            <div class="w-2.5 h-2.5 bg-white rounded-full relative z-10"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">Verify your email</h1>
+                
+                <p class="text-sm text-slate-600 dark:text-zinc-400 font-medium leading-relaxed mb-6 px-2">
+                    Enter the 6-digit secure code we just sent to <span id="displayEmail" class="font-bold text-brandIndigo dark:text-indigo-400">your email address</span>.
+                </p>
+
+
+
+                <!-- OTP Form -->
+                <form id="otpForm" class="w-full space-y-6">
+                    <div class="flex justify-between items-center gap-2" id="otpContainer">
+                        <input type="text" maxlength="1" class="otp-input w-11 sm:w-12 h-14 text-center text-2xl font-black bg-white dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brandIndigo focus:border-brandIndigo outline-none transition-all text-slate-900 dark:text-white shadow-sm" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" required autofocus />
+                        <input type="text" maxlength="1" class="otp-input w-11 sm:w-12 h-14 text-center text-2xl font-black bg-white dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brandIndigo focus:border-brandIndigo outline-none transition-all text-slate-900 dark:text-white shadow-sm" pattern="[0-9]" inputmode="numeric" required />
+                        <input type="text" maxlength="1" class="otp-input w-11 sm:w-12 h-14 text-center text-2xl font-black bg-white dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brandIndigo focus:border-brandIndigo outline-none transition-all text-slate-900 dark:text-white shadow-sm" pattern="[0-9]" inputmode="numeric" required />
+                        <input type="text" maxlength="1" class="otp-input w-11 sm:w-12 h-14 text-center text-2xl font-black bg-white dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brandIndigo focus:border-brandIndigo outline-none transition-all text-slate-900 dark:text-white shadow-sm" pattern="[0-9]" inputmode="numeric" required />
+                        <input type="text" maxlength="1" class="otp-input w-11 sm:w-12 h-14 text-center text-2xl font-black bg-white dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brandIndigo focus:border-brandIndigo outline-none transition-all text-slate-900 dark:text-white shadow-sm" pattern="[0-9]" inputmode="numeric" required />
+                        <input type="text" maxlength="1" class="otp-input w-11 sm:w-12 h-14 text-center text-2xl font-black bg-white dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-brandIndigo focus:border-brandIndigo outline-none transition-all text-slate-900 dark:text-white shadow-sm" pattern="[0-9]" inputmode="numeric" required />
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div id="otpErrorAlert" class="hidden p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-sm font-bold text-rose-600 dark:text-rose-400"></div>
+
+                    <button type="submit" id="verifyBtn" class="group relative flex items-center justify-center w-full py-3.5 rounded-xl bg-gradient-to-b from-brandIndigo to-brandViolet text-slate-900 dark:text-white font-bold text-sm shadow-[0_2px_15px_rgba(79,70,229,0.3)] hover:shadow-[0_4px_25px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 overflow-hidden outline-none">
+                        <span id="verifyBtnText">Verify & Continue</span>
+                        <svg id="verifySpinner" class="hidden animate-spin h-5 w-5 text-slate-900 dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                    
+                    <button type="button" id="resendBtn" class="w-full text-sm font-bold text-slate-500 hover:text-brandIndigo dark:hover:text-brandViolet transition-colors outline-none focus:underline">
+                        Didn't receive the code? Resend
+                    </button>
+                </form>
+
+            </div>
+
+        </div>
+
+        <!-- Go back to login -->
+        <div class="mt-8 text-center">
+            <a href="auth.html#login" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-brandIndigo dark:hover:text-brandViolet transition-colors group outline-none focus-visible:ring-2 focus-visible:ring-brandIndigo rounded">
+                <svg class="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Return to Login
+            </a>
+        </div>
+    </div>
+    
+    <!-- Verification Logic -->
+    <script type="module">
+        import { authHelper } from './src/lib/supabase.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('.otp-input');
+            const form = document.getElementById('otpForm');
+            const errorAlert = document.getElementById('otpErrorAlert');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const verifyBtnText = document.getElementById('verifyBtnText');
+            const verifySpinner = document.getElementById('verifySpinner');
+            const displayEmail = document.getElementById('displayEmail');
+            const resendBtn = document.getElementById('resendBtn');
+
+            // 1. Get the pending email from session storage
+            const pendingEmail = sessionStorage.getItem('verifyEmail');
+            if (pendingEmail) {
+                displayEmail.textContent = pendingEmail;
+            } else {
+                // No email in session, likely accessed page directly.
+                // Redirect back to login.
+                window.location.replace('auth.html#login');
+                return;
+            }
+
+            // 2. Setup OTP Input Box Interaction Logic
+            inputs.forEach((input, index) => {
+                // Focus styling
+                input.addEventListener('focus', () => input.select());
+                
+                // Handle keyboard input
+                input.addEventListener('keydown', (e) => {
+                    // Only allow numbers, backspace, and navigation
+                    if (
+                        !/^[0-9]$/.test(e.key) && 
+                        e.key !== 'Backspace' && 
+                        e.key !== 'Delete' &&
+                        e.key !== 'ArrowLeft' &&
+                        e.key !== 'ArrowRight' &&
+                        e.key !== 'Tab' &&
+                        !e.metaKey && !e.ctrlKey // Allow Cmd+V / Ctrl+V
+                    ) {
+                        e.preventDefault();
+                    }
+
+                    // Backspace behavior
+                    if (e.key === 'Backspace') {
+                        if (input.value === '') {
+                            // If empty, move to previous
+                            if (index > 0) {
+                                inputs[index - 1].focus();
+                                inputs[index - 1].value = '';
+                                e.preventDefault();
+                            }
+                        } else {
+                            // If not empty, clear current
+                            input.value = '';
+                        }
+                    }
+                    
+                    // Arrow navigation
+                    if (e.key === 'ArrowLeft' && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                    if (e.key === 'ArrowRight' && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+
+                // Auto-advance on input
+                input.addEventListener('input', (e) => {
+                    // Force numeric
+                    input.value = input.value.replace(/[^0-9]/g, '');
+                    
+                    if (input.value !== '' && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+
+                // Handle pasting full 6 digit codes
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+                    const numbers = pastedData.replace(/[^0-9]/g, '').slice(0, 6).split('');
+                    
+                    if (numbers.length > 0) {
+                        inputs.forEach((inpt, i) => {
+                            if (numbers[i]) {
+                                inpt.value = numbers[i];
+                            }
+                        });
+                        
+                        // Focus the next empty box, or the last box
+                        const nextIndex = Math.min(numbers.length, inputs.length - 1);
+                        inputs[nextIndex].focus();
+                    }
+                });
+            });
+
+            // 3. Form Submission
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorAlert.classList.add('hidden');
+                
+                // Gather OTP
+                const otpCode = Array.from(inputs).map(input => input.value).join('');
+                
+                if (otpCode.length !== 6) {
+                    errorAlert.textContent = 'Please enter all 6 digits.';
+                    errorAlert.classList.remove('hidden');
+                    return;
+                }
+
+                // Loading State
+                verifyBtn.disabled = true;
+                verifyBtnText.classList.add('hidden');
+                verifySpinner.classList.remove('hidden');
+
+                // Call Supabase verification
+                const { error } = await authHelper.verifySignupOtp(pendingEmail, otpCode);
+
+                if (error) {
+                    errorAlert.textContent = error.message || 'Invalid verification code. Please try again.';
+                    errorAlert.classList.remove('hidden');
+                    
+                    // Restore button
+                    verifyBtn.disabled = false;
+                    verifyBtnText.classList.remove('hidden');
+                    verifySpinner.classList.add('hidden');
+                    
+                    // Clear inputs and focus first
+                    inputs.forEach(input => input.value = '');
+                    inputs[0].focus();
+                } else {
+                    // Success! Clean up session storage
+                    sessionStorage.removeItem('verifyEmail');
+                    
+                    // Redirect to pricing page
+                    window.location.href = 'pricing.html';
+                }
+            });
+
+            // Resend functionality (Placeholder for future hookup if needed, though Supabase supports it via resend endpoint)
+            resendBtn.addEventListener('click', () => {
+                errorAlert.textContent = "Please check your email. If you need a new code, please sign up again.";
+                errorAlert.classList.remove('hidden', 'text-rose-600', 'bg-rose-50', 'border-rose-200');
+                errorAlert.classList.add('text-brandIndigo', 'bg-indigo-50', 'border-indigo-200');
+            });
+        });
+    </script>
+</body>
+</html>

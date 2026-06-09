@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <!-- Global Theme Manager -->
+    <script src="/js/theme-manager.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revenue Operations | Sales Saathi</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Tailwind CSS Framework -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'] },
+          colors: {
+            brand: '#2563eb',
+            brandDark: '#1d4ed8',
+            brandIndigo: '#4f46e5',
+            brandViolet: '#6366f1',
+            brandEmerald: '#10b981',
+            surface: '#121212',
+            card: '#1a1a1a',
+            glassBorder: 'rgba(255,255,255,0.08)',
+            glassBg: 'rgba(20,20,20,0.6)',
+            lightBorder: 'rgba(15,23,42,0.08)',
+            darkBorder: 'rgba(255,255,255,0.08)'
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'spin-slow': 'spin 4s linear infinite',
+            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' } }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- State Engine: Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Custom Architectures -->
+  <style>
+    .bg-gradient-radial {
+      background: transparent;
+    }
+
+    .dark .bg-gradient-radial {
+      background: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .text-gradient-brand {
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .dark .glass-panel {
+      background: rgba(20, 20, 20, 0.4);
+    }
+
+    .glass-border {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .dark .glass-border {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-hover {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+
+    .tracking-tight-cinematic {
+      letter-spacing: -0.03em;
+    }
+
+    /* Terminal logs styling */
+    .terminal-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .terminal-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .terminal-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    /* Scrollbar override for premium feel */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0A0A0A;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
+</head>
+
+<body
+  x-data="{ activeSyncStep: 1, currentChallenge: 'hygiene', selectedCrm: 'salesforce', profileDropdownOpen: false, isLoggedIn: false }"
+  class="bg-gray-50 text-gray-900 dark:bg-[#0A0A0A] dark:text-white font-sans antialiased min-h-screen relative selection:bg-brand selection:text-white flex flex-col">
+
+    <!-- SECTION 1: Sticky Navigation Header -->
+        <!-- SECTION 1: Dynamic Global Header Mount -->
+    <div id="global-header-mount"></div>
+    <script type="module" src="/js/auth-manager.js"></script>
+    <script type="module" src="/js/header-manager.js"></script>
+
+  <main class="flex-grow pt-24 bg-gradient-radial">
+
+    <!-- ========================================== -->
+    <!-- SECTION 1: Cinematic RevOps Hero Canvas    -->
+    <!-- ========================================== -->
+    <section
+      class="relative max-w-7xl mx-auto px-6 pt-16 pb-24 lg:pt-24 lg:pb-32 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+
+      <!-- Copy Block -->
+      <div class="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left z-10">
+        <!-- Role Badge -->
+        <div
+          class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-border bg-slate-100 dark:bg-white/5 mb-8 animate-fade-in-up border-purple-500/30 text-purple-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+            </path>
+          </svg>
+          <span class="text-xs font-semibold tracking-wider uppercase">Built for RevOps & Systems</span>
+        </div>
+
+        <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight-cinematic text-slate-900 dark:text-white leading-tight mb-6">
+          Keep Your Revenue Engine <br class="hidden xl:block" />
+          <span class="text-gradient-brand">Running Efficiently</span>
+        </h1>
+
+        <p class="text-lg md:text-xl text-slate-500 dark:text-gray-400 mb-10 leading-relaxed max-w-xl">
+          Automate CRM updates, eliminate manual work, and maintain clean revenue data. Sales Saathi seamlessly bridges
+          the gap between sales activity and structured data hygiene.
+        </p>
+
+        <!-- Primary Action -->
+        <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <a href="../auth.html"
+            class="w-full sm:w-auto text-base font-semibold bg-slate-900 text-white dark:bg-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-200 px-8 py-3.5 rounded-full transition-all shadow-xl dark:shadow-[0_0_30px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2">
+            Start Free Trial
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          </a>
+          <a href="#integration"
+            class="w-full sm:w-auto text-base font-medium text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:text-white glass-border px-8 py-3.5 rounded-full bg-white/60 hover:bg-white dark:bg-transparent dark:hover:bg-white/5 backdrop-blur-sm transition-all flex items-center justify-center">
+            View API Docs
+          </a>
+        </div>
+      </div>
+
+      <!-- High-Fidelity Workspace Mockup -->
+      <div class="lg:w-1/2 w-full relative perspective-1000">
+        <!-- Background Glow -->
+        <div
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[120%] bg-brand/5 dark:bg-brand/10 blur-[100px] rounded-full z-0 pointer-events-none">
+        </div>
+
+        <!-- Terminal / API Log UI -->
+        <div
+          class="relative z-10 glass-border rounded-xl bg-white/90 dark:bg-[#0d0d0d]/90 shadow-2xl overflow-hidden transform rotate-y-[-5deg] rotate-x-5 animate-float border-t-white/10 flex flex-col h-[400px]">
+
+          <!-- Mock Header -->
+          <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-white/5 px-4 py-2">
+            <div class="flex items-center gap-2">
+              <div class="flex gap-1.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+              </div>
+              <div class="text-xs font-mono text-slate-500 dark:text-gray-400 ml-2">saathi-sync-daemon v2.4.1</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span
+                class="text-[10px] font-mono text-green-400 bg-green-400/10 px-2 py-0.5 rounded border border-green-400/20 flex items-center gap-1">
+                <span class="w-1 h-1 rounded-full bg-green-400 animate-pulse"></span> 200 OK
+              </span>
+            </div>
+          </div>
+
+          <!-- Mock Content Data -->
+          <div class="p-4 font-mono text-xs overflow-y-auto terminal-scroll flex-grow">
+            <div class="text-slate-500 dark:text-gray-500 mb-1">[10:02:34] <span class="text-blue-400">INFO</span> Initiating bidirectional
+              sync to Salesforce...</div>
+            <div class="text-slate-500 dark:text-gray-500 mb-1">[10:02:35] <span class="text-blue-400">INFO</span> Found 4 completed
+              meetings pending transcription.</div>
+            <div class="text-slate-500 dark:text-gray-500 mb-1">[10:02:36] <span class="text-purple-400">AI</span> Parsing structural notes
+              for Opportunity ID: <span class="text-slate-900 dark:text-white">#OPP-8924</span></div>
+            <div class="text-slate-500 dark:text-gray-500 mb-1">[10:02:37] <span class="text-blue-400">INFO</span> Pushing structured schema
+              payload (JSON)...</div>
+
+            <!-- JSON Payload Simulation -->
+            <div class="bg-slate-100 dark:bg-black/50 p-3 rounded border border-slate-200 dark:border-white/5 my-3 text-slate-600 dark:text-gray-300">
+              <div class="text-pink-400">{</div>
+              <div class="pl-4">"<span class="text-blue-300">target_object</span>": "<span
+                  class="text-yellow-300">Opportunity</span>",</div>
+              <div class="pl-4">"<span class="text-blue-300">record_id</span>": "<span
+                  class="text-yellow-300">0063h00000X1yZkAAI</span>",</div>
+              <div class="pl-4">"<span class="text-blue-300">mutations</span>": <span class="text-pink-400">[</span>
+              </div>
+              <div class="pl-8 text-slate-900 dark:text-white">{"field": "StageName", "value": "Value Proposition"},</div>
+              <div class="pl-8 text-slate-900 dark:text-white">{"field": "NextStep", "value": "Security Review scheduled for Friday"},</div>
+              <div class="pl-8 text-slate-900 dark:text-white">{"field": "Amount", "value": 145000}</div>
+              <div class="pl-4"><span class="text-pink-400">]</span></div>
+              <div class="text-pink-400">}</div>
+            </div>
+
+            <div class="text-slate-500 dark:text-gray-500 mb-1">[10:02:38] <span class="text-green-400">SUCCESS</span> Payload accepted. 3
+              fields updated successfully.</div>
+            <div class="text-slate-500 dark:text-gray-500 mb-1">[10:02:38] <span class="text-blue-400">INFO</span> Triggering downstream
+              Slack webhook alerter.</div>
+            <div class="text-slate-500 dark:text-gray-500 mt-4 flex items-center gap-2"><span
+                class="w-1.5 h-3 bg-white/50 block animate-pulse-fast"></span> Waiting for next event hook...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: System Data Integrity Challenges-->
+    <!-- ========================================== -->
+    <section class="py-24 border-t border-slate-200 dark:border-white/5 relative z-10 bg-slate-100 dark:bg-black/40">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <h2 class="text-sm font-bold text-purple-400 uppercase tracking-widest mb-2">The Operations Cost</h2>
+          <h3 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">The True Cost of Manual Administration
+          </h3>
+          <p class="text-slate-500 dark:text-gray-400 mt-4">When reps serve as the primary data entry clerks, hygiene degrades, forecasting
+            skews, and operations teams spend cycles chasing updates rather than building strategy.</p>
+        </div>
+
+        <!-- 2x2 Responsive Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Constraint 1 -->
+          <div
+            class="glass-panel glass-border p-8 rounded-2xl card-hover flex flex-col justify-between group bg-gradient-to-b from-white/5 to-transparent">
+            <div>
+              <div
+                class="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 group-hover:bg-purple-500/10 group-hover:border-purple-500/30 transition-colors">
+                <svg class="w-6 h-6 text-slate-500 dark:text-gray-400 group-hover:text-purple-400" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                  </path>
+                </svg>
+              </div>
+              <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Decayed CRM Hygiene</h4>
+              <p class="text-slate-500 dark:text-gray-400 text-sm leading-relaxed">Required fields are bypassed, custom object links break,
+                and critical deal milestones are summarized with one-word sentences. Dirty data invalidates your entire
+                RevOps architecture.</p>
+            </div>
+            <div class="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
+              <span class="text-xs font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider">System Alert</span>
+              <span class="text-red-400 font-bold font-mono bg-red-400/10 px-2 py-1 rounded text-sm">-30% Data
+                Fidelity</span>
+            </div>
+          </div>
+
+          <!-- Constraint 2 -->
+          <div
+            class="glass-panel glass-border p-8 rounded-2xl card-hover flex flex-col justify-between group bg-gradient-to-b from-white/5 to-transparent">
+            <div>
+              <div
+                class="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 group-hover:bg-purple-500/10 group-hover:border-purple-500/30 transition-colors">
+                <svg class="w-6 h-6 text-slate-500 dark:text-gray-400 group-hover:text-purple-400" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+              </div>
+              <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Fragmented Activity & Missing Data</h4>
+              <p class="text-slate-500 dark:text-gray-400 text-sm leading-relaxed">Reps update records at the end of the quarter. The gap
+                between the actual sales activity happening on Zoom and the reflection in Salesforce creates dangerous
+                operational blind spots.</p>
+            </div>
+            <div class="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
+              <span class="text-xs font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider">System Alert</span>
+              <span class="text-red-400 font-bold font-mono bg-red-400/10 px-2 py-1 rounded text-sm">Orphaned
+                Records</span>
+            </div>
+          </div>
+
+          <!-- Constraint 3 -->
+          <div
+            class="glass-panel glass-border p-8 rounded-2xl card-hover flex flex-col justify-between group bg-gradient-to-b from-white/5 to-transparent">
+            <div>
+              <div
+                class="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 group-hover:bg-purple-500/10 group-hover:border-purple-500/30 transition-colors">
+                <svg class="w-6 h-6 text-slate-500 dark:text-gray-400 group-hover:text-purple-400" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Draining Representative Overhead</h4>
+              <p class="text-slate-500 dark:text-gray-400 text-sm leading-relaxed">High-salaried account executives spend 30%+ of their
+                working hours copying notes into standard fields, destroying their active selling time and increasing
+                burnout vectors.</p>
+            </div>
+            <div class="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
+              <span class="text-xs font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider">System Alert</span>
+              <span class="text-yellow-400 font-bold font-mono bg-yellow-400/10 px-2 py-1 rounded text-sm">-12 Hrs/Wk
+                Active Selling</span>
+            </div>
+          </div>
+
+          <!-- Constraint 4 -->
+          <div
+            class="glass-panel glass-border p-8 rounded-2xl card-hover flex flex-col justify-between group bg-gradient-to-b from-white/5 to-transparent">
+            <div>
+              <div
+                class="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center mb-6 group-hover:bg-purple-500/10 group-hover:border-purple-500/30 transition-colors">
+                <svg class="w-6 h-6 text-slate-500 dark:text-gray-400 group-hover:text-purple-400" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                  </path>
+                </svg>
+              </div>
+              <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Imprecise Downstream Forecasts</h4>
+              <p class="text-slate-500 dark:text-gray-400 text-sm leading-relaxed">Garbage in, garbage out. Without structured, continuous
+                updates mapping exactly to methodology definitions, your board-level forecast models become purely
+                speculative.</p>
+            </div>
+            <div class="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
+              <span class="text-xs font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider">System Alert</span>
+              <span class="text-red-400 font-bold font-mono bg-red-400/10 px-2 py-1 rounded text-sm">Reporting
+                Skew</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 3: RevOps Core Architecture        -->
+    <!-- ========================================== -->
+    <section class="py-24 border-t border-slate-200 dark:border-white/5 relative z-10">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="mb-16">
+          <h2 class="text-sm font-bold text-brand uppercase tracking-widest mb-2">The Sales Saathi Solution</h2>
+          <h3 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight max-w-2xl">5 Core Transactional Pillars
+          </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+          <!-- Pillar 1 -->
+          <div class="md:col-span-6 glass-panel glass-border p-8 rounded-3xl flex flex-col justify-between group h-full relative overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+            <div>
+              <div class="w-12 h-12 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center mb-6 relative z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">Automated Zero-Click CRM Sync</h3>
+              <p class="text-slate-500 dark:text-gray-400 text-sm max-w-md relative z-10">Instantly map transcribed conversational data to your rigid CRM schema. We automatically update custom fields, advance stage gates, and log tasks without requiring a single manual keystroke from your sales team.</p>
+            </div>
+            <div class="mt-8 relative z-10">
+              <div class="flex items-center gap-4 text-xs font-mono text-slate-500 dark:text-gray-500">
+                <span class="flex items-center gap-1"><span class="text-green-400">✓</span> Map Custom Objects</span>
+                <span class="flex items-center gap-1"><span class="text-green-400">✓</span> Trigger Flow Updates</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="md:col-span-6 glass-panel glass-border p-8 rounded-3xl flex flex-col justify-between group h-full relative overflow-hidden bg-gradient-to-br from-white/5 to-transparent">
+            <div>
+              <div class="w-12 h-12 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center mb-6 relative z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                </svg>
+              </div>
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">Generative AI Meeting Summaries</h3>
+              <p class="text-slate-500 dark:text-gray-400 text-sm relative z-10">Force standardized note structures. Sales Saathi enforces MEDDPICC, BANT, or custom frameworks on every call transcript.</p>
+            </div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="md:col-span-4 glass-panel glass-border p-8 rounded-3xl flex flex-col group relative overflow-hidden">
+            <div class="w-12 h-12 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center mb-6 relative z-10">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">Comprehensive Activity Mapping</h3>
+            <p class="text-slate-500 dark:text-gray-400 text-sm relative z-10">Eliminate orphaned records. Calendar invites, emails, and meetings are natively tied to correct Contacts and Opportunities.</p>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="md:col-span-4 glass-panel glass-border p-8 rounded-3xl flex flex-col group relative overflow-hidden">
+            <div class="w-12 h-12 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl flex items-center justify-center mb-6 relative z-10">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">Cross-Platform Automations</h3>
+            <p class="text-slate-500 dark:text-gray-400 text-sm relative z-10">Trigger Slack deal-desk channels, update Asana implementation boards, and push data to Snowflake natively from the meeting conclusion event.</p>
+          </div>
+
+          <!-- Pillar 5 -->
+          <div class="md:col-span-4 glass-panel glass-border p-8 rounded-3xl flex flex-col group relative overflow-hidden">
+            <div class="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center mb-6 relative z-10">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">Multi-Channel Intelligence</h3>
+            <p class="text-slate-500 dark:text-gray-400 text-sm relative z-10">Ingest telemetry from LinkedIn outreach, email cadences, and live calls into one cohesive structured schema for advanced reporting.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- SECTION 4: Programmatic Process Automation Workflow-->
+    <!-- ================================================== -->
+    <section class="py-24 border-t border-slate-200 dark:border-white/5 relative z-10 bg-slate-50 dark:bg-[#0A0A0A]">
+      <div class="max-w-7xl mx-auto px-6">
+
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight mb-4">Programmatic Process Automation</h2>
+          <p class="text-slate-500 dark:text-gray-400 max-w-2xl mx-auto">Watch the exact lifecycle of a data payload as it moves from raw
+            conversation to structured database entry without human intervention.</p>
+        </div>
+
+        <!-- Interactive Workflow Widget -->
+        <div class="w-full glass-panel glass-border rounded-2xl p-6 lg:p-12 shadow-2xl">
+
+          <!-- Tab Navigation Headers -->
+          <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-12 relative">
+            <!-- Connecting Line Background -->
+            <div class="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-slate-200 dark:bg-white/10 -z-10 translate-y-[-50%]">
+            </div>
+
+            <!-- Step 1 -->
+            <button @click="activeSyncStep = 1" class="flex flex-col items-center gap-2 group outline-none">
+              <div
+                :class="activeSyncStep === 1 ? 'bg-brand text-slate-900 dark:text-white border-brand shadow-[0_0_15px_rgba(37,99,235,0.4)] scale-110' : (activeSyncStep > 1 ? 'bg-brand/20 text-brand border-brand/40' : 'bg-white dark:bg-[#121212] text-slate-500 dark:text-gray-500 border-slate-200 dark:border-white/10') w-10 h-10 rounded-full border flex items-center justify-center font-bold transition-all z-10">1
+              </div>
+              <span :class="activeSyncStep === 1 ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-gray-500' text-xs font-semibold uppercase tracking-wider transition-colors">Event End</span>
+            </button>
+
+            <!-- Step 2 -->
+            <button @click="activeSyncStep = 2" class="flex flex-col items-center gap-2 group outline-none">
+              <div
+                :class="activeSyncStep === 2 ? 'bg-brand text-slate-900 dark:text-white border-brand shadow-[0_0_15px_rgba(37,99,235,0.4)] scale-110' : (activeSyncStep > 2 ? 'bg-brand/20 text-brand border-brand/40' : 'bg-white dark:bg-[#121212] text-slate-500 dark:text-gray-500 border-slate-200 dark:border-white/10') w-10 h-10 rounded-full border flex items-center justify-center font-bold transition-all z-10">2
+              </div>
+              <span :class="activeSyncStep === 2 ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-gray-500' text-xs font-semibold uppercase tracking-wider transition-colors">AI Processing</span>
+            </button>
+
+            <!-- Step 3 -->
+            <button @click="activeSyncStep = 3" class="flex flex-col items-center gap-2 group outline-none">
+              <div
+                :class="activeSyncStep === 3 ? 'bg-brand text-slate-900 dark:text-white border-brand shadow-[0_0_15px_rgba(37,99,235,0.4)] scale-110' : (activeSyncStep > 3 ? 'bg-brand/20 text-brand border-brand/40' : 'bg-white dark:bg-[#121212] text-slate-500 dark:text-gray-500 border-slate-200 dark:border-white/10') w-10 h-10 rounded-full border flex items-center justify-center font-bold transition-all z-10">3
+              </div>
+              <span :class="activeSyncStep === 3 ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-gray-500' text-xs font-semibold uppercase tracking-wider transition-colors">Schema Sync</span>
+            </button>
+
+            <!-- Step 4 -->
+            <button @click="activeSyncStep = 4" class="flex flex-col items-center gap-2 group outline-none">
+              <div
+                :class="activeSyncStep === 4 ? 'bg-brand text-slate-900 dark:text-white border-brand shadow-[0_0_15px_rgba(37,99,235,0.4)] scale-110' : (activeSyncStep > 4 ? 'bg-brand/20 text-brand border-brand/40' : 'bg-white dark:bg-[#121212] text-slate-500 dark:text-gray-500 border-slate-200 dark:border-white/10') w-10 h-10 rounded-full border flex items-center justify-center font-bold transition-all z-10">4
+              </div>
+              <span :class="activeSyncStep === 4 ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-gray-500' text-xs font-semibold uppercase tracking-wider transition-colors">Downstream</span>
+            </button>
+
+            <!-- Step 5 -->
+            <button @click="activeSyncStep = 5" class="flex flex-col items-center gap-2 group outline-none">
+              <div
+                :class="activeSyncStep === 5 ? '' : ''" class="w-10 h-10 rounded-full border flex items-center justify-center font-bold transition-all z-10">5
+              </div>
+              <span :class="activeSyncStep === 5 ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-gray-500' text-xs font-semibold uppercase tracking-wider transition-colors">Reporting</span>
+            </button>
+          </div>
+
+          <!-- Content Displays -->
+          <div class="bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/5 rounded-xl p-8 min-h-[350px] relative overflow-hidden flex items-stretch">
+
+            <!-- Step 1 Content -->
+            <div x-show="activeSyncStep === 1" x-transition.opacity class="w-full flex flex-col md:flex-row items-center gap-8 h-full">
+              <!-- Info -->
+              <div class="md:w-1/2 flex flex-col items-start gap-4">
+                <div class="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Live Meeting Event Closed</h3>
+                  <p class="text-slate-500 dark:text-gray-400 leading-relaxed">The webhook fires immediately when the Zoom/Teams call concludes. Sales Saathi pulls the raw audio file and transcript within 30 seconds of termination.</p>
+                </div>
+              </div>
+              <!-- Realtime Data Terminal -->
+              <div class="md:w-1/2 w-full bg-slate-50 dark:bg-[#09090b] rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden h-[260px] flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-4 py-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <span class="text-slate-500 dark:text-gray-500 font-mono text-[10px] ml-2">event-listener.ts</span>
+                  </div>
+                  <span class="text-blue-400 font-mono text-[10px] flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span> LISTENING</span>
+                </div>
+                <div class="p-4 font-mono text-[11px] text-slate-600 dark:text-gray-300 overflow-y-auto">
+                  <div class="text-slate-500 dark:text-gray-500 mb-1.5">[14:32:01] Awaiting incoming connections...</div>
+                  <div class="text-green-400 mb-1.5">[14:32:05] Webhook received: zoom.meeting.ended</div>
+                  <div class="text-pink-400">{</div>
+                  <div class="pl-4">"<span class="text-blue-300">event_id</span>": "<span class="text-yellow-300">evt_98x12z</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">platform</span>": "<span class="text-yellow-300">Zoom</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">meeting_id</span>": "<span class="text-yellow-300">942-812-3456</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">duration_seconds</span>": <span class="text-purple-300">2535</span>,</div>
+                  <div class="pl-4">"<span class="text-blue-300">recording_available</span>": <span class="text-purple-300">true</span></div>
+                  <div class="text-pink-400">}</div>
+                  <div class="text-slate-500 dark:text-gray-500 mt-1.5">[14:32:06] Initiating raw media pull sequence...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2 Content -->
+            <div x-show="activeSyncStep === 2" x-transition.opacity style="display: none;" class="w-full flex flex-col md:flex-row items-center gap-8 h-full">
+              <!-- Info -->
+              <div class="md:w-1/2 flex flex-col items-start gap-4">
+                <div class="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+                  <svg class="w-8 h-8 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">AI Structural Note Generation</h3>
+                  <p class="text-slate-500 dark:text-gray-400 leading-relaxed">The NLP engine categorizes the unstructured dialog into your mandated MEDDPICC JSON object, identifying exact fields for Stage, Competitor, and Budget.</p>
+                </div>
+              </div>
+              <!-- Realtime Data Terminal -->
+              <div class="md:w-1/2 w-full bg-slate-50 dark:bg-[#09090b] rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden h-[260px] flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-4 py-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <span class="text-slate-500 dark:text-gray-500 font-mono text-[10px] ml-2">nlp-parser.py</span>
+                  </div>
+                  <span class="text-purple-400 font-mono text-[10px] flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> PROCESSING</span>
+                </div>
+                <div class="p-4 font-mono text-[11px] text-slate-600 dark:text-gray-300 overflow-y-auto">
+                  <div class="text-slate-500 dark:text-gray-500 mb-1.5">[14:32:15] <span class="text-purple-400">INFO</span> Audio diarization complete.</div>
+                  <div class="text-slate-500 dark:text-gray-500 mb-1.5">[14:32:16] <span class="text-purple-400">INFO</span> Applying MEDDPICC extraction model...</div>
+                  <div class="text-pink-400">{</div>
+                  <div class="pl-4">"<span class="text-blue-300">metrics</span>": "<span class="text-yellow-300">$2.4M ARR impact identified</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">economic_buyer</span>": "<span class="text-yellow-300">Sarah Jenkins (VP Eng) confirmed</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">decision_criteria</span>": "<span class="text-yellow-300">SOC2, API latency < 50ms</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">competitors</span>": <span class="text-pink-400">[</span>"<span class="text-yellow-300">Gong</span>", "<span class="text-yellow-300">Chorus</span>"<span class="text-pink-400">]</span></div>
+                  <div class="text-pink-400">}</div>
+                  <div class="text-green-400 mt-1.5">[14:32:18] Schema validation passed. Confidence: 0.94</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3 Content -->
+            <div x-show="activeSyncStep === 3" x-transition.opacity style="display: none;" class="w-full flex flex-col md:flex-row items-center gap-8 h-full">
+              <!-- Info -->
+              <div class="md:w-1/2 flex flex-col items-start gap-4">
+                <div class="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 shrink-0">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                  </svg>
+                </div>
+                <div class="w-full">
+                  <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Bi-Directional CRM Schema Sync</h3>
+                  <p class="text-slate-500 dark:text-gray-400 leading-relaxed mb-4">Direct API injection into Salesforce or HubSpot without manual review required.</p>
+                  <div class="flex gap-2">
+                    <span class="px-2 py-1 bg-green-500/10 text-green-400 rounded text-xs font-mono font-bold">POST /services/data/v58.0/sobjects/Opportunity</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Realtime Data Terminal -->
+              <div class="md:w-1/2 w-full bg-slate-50 dark:bg-[#09090b] rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden h-[260px] flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-4 py-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <span class="text-slate-500 dark:text-gray-500 font-mono text-[10px] ml-2">salesforce-connector.go</span>
+                  </div>
+                  <span class="text-green-400 font-mono text-[10px] flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> WRITING</span>
+                </div>
+                <div class="p-4 font-mono text-[11px] text-slate-600 dark:text-gray-300 overflow-y-auto">
+                  <div class="text-slate-500 dark:text-gray-500 mb-1.5">[14:32:19] Pushing mutations to Opportunity: 0063h00000X1yZk...</div>
+                  <div class="text-pink-400">{</div>
+                  <div class="pl-4">"<span class="text-blue-300">StageName</span>": "<span class="text-yellow-300">Negotiation</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">Next_Step__c</span>": "<span class="text-yellow-300">Review legal contract on Friday</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">Amount</span>": <span class="text-purple-300">145000</span>,</div>
+                  <div class="pl-4">"<span class="text-blue-300">Competitor__c</span>": "<span class="text-yellow-300">Gong; Chorus</span>"</div>
+                  <div class="text-pink-400">}</div>
+                  <div class="text-green-400 mt-1.5">[14:32:20] 204 No Content (Success)</div>
+                  <div class="text-slate-500 dark:text-gray-500">[14:32:20] Rate limit: 142/10000 remaining.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4 Content -->
+            <div x-show="activeSyncStep === 4" x-transition.opacity style="display: none;" class="w-full flex flex-col md:flex-row items-center gap-8 h-full">
+              <!-- Info -->
+              <div class="md:w-1/2 flex flex-col items-start gap-4">
+                <div class="w-16 h-16 rounded-full bg-brand/10 border border-brand/30 flex items-center justify-center text-brand shrink-0">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Downstream Task Creation</h3>
+                  <p class="text-slate-500 dark:text-gray-400 leading-relaxed">A personalized recap email is placed in the rep's drafts folder, and a "Contract Review" task is automatically assigned for Friday in the CRM.</p>
+                </div>
+              </div>
+              <!-- Realtime Data Terminal -->
+              <div class="md:w-1/2 w-full bg-slate-50 dark:bg-[#09090b] rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden h-[260px] flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-4 py-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <span class="text-slate-500 dark:text-gray-500 font-mono text-[10px] ml-2">automation-router.ts</span>
+                  </div>
+                  <span class="text-brand font-mono text-[10px] flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span> ROUTING</span>
+                </div>
+                <div class="p-4 font-mono text-[11px] text-slate-600 dark:text-gray-300 overflow-y-auto">
+                  <div class="text-slate-500 dark:text-gray-500 mb-1.5">[14:32:21] Triggering secondary workflows...</div>
+                  <div class="text-blue-400 mb-1.5">-> Dispatched: Slack Notification #deal-desk</div>
+                  <div class="text-blue-400 mb-1.5">-> Dispatched: Create Task (Contract Review)</div>
+                  <div class="text-pink-400">{</div>
+                  <div class="pl-4">"<span class="text-blue-300">subject</span>": "<span class="text-yellow-300">Contract Review</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">owner_id</span>": "<span class="text-yellow-300">U9824X</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">due_date</span>": "<span class="text-yellow-300">2026-06-08</span>"</div>
+                  <div class="text-pink-400">}</div>
+                  <div class="text-green-400 mt-1.5">[14:32:22] All downstream webhooks acknowledged.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 5 Content -->
+            <div x-show="activeSyncStep === 5" x-transition.opacity style="display: none;" class="w-full flex flex-col md:flex-row items-center gap-8 h-full">
+              <!-- Info -->
+              <div class="md:w-1/2 flex flex-col items-start gap-4">
+                <div class="w-16 h-16 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center text-yellow-400 shrink-0">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Executive Reporting Live</h3>
+                  <p class="text-slate-500 dark:text-gray-400 leading-relaxed">Because the data was mapped perfectly to structured schema fields, the VP of Sales' dashboard updates live, accurately reflecting the new pipeline velocity.</p>
+                </div>
+              </div>
+              <!-- Realtime Data Terminal -->
+              <div class="md:w-1/2 w-full bg-slate-50 dark:bg-[#09090b] rounded-xl border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden h-[260px] flex flex-col">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-4 py-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/20"></div>
+                    <span class="text-slate-500 dark:text-gray-500 font-mono text-[10px] ml-2">snowflake-sync.sql</span>
+                  </div>
+                  <span class="text-yellow-400 font-mono text-[10px] flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span> COMMITTED</span>
+                </div>
+                <div class="p-4 font-mono text-[11px] text-slate-600 dark:text-gray-300 overflow-y-auto">
+                  <div class="text-slate-500 dark:text-gray-500 mb-1.5">[14:32:25] Fivetran incremental sync completed.</div>
+                  <div class="text-yellow-400 mb-1.5">Refreshing materialized views...</div>
+                  <div class="text-pink-400">{</div>
+                  <div class="pl-4">"<span class="text-blue-300">metric</span>": "<span class="text-yellow-300">pipeline_velocity</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">delta</span>": "<span class="text-green-400">+14%</span>",</div>
+                  <div class="pl-4">"<span class="text-blue-300">new_commit_value</span>": <span class="text-purple-300">$4,250,000</span></div>
+                  <div class="text-pink-400">}</div>
+                  <div class="text-green-400 mt-1.5">[14:32:26] Data Warehouse synced. Dashboards are current.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Next Step Button -->
+          <div class="mt-6 flex justify-end">
+            <button @click="activeSyncStep = activeSyncStep < 5 ? activeSyncStep + 1 : 1"
+              class="text-sm font-medium text-slate-900 dark:text-white bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:bg-white/20 px-4 py-2 rounded transition-colors flex items-center gap-2 outline-none">
+              <span x-text="activeSyncStep < 5 ? 'Run Next Step' : 'Restart Loop'"></span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- SECTION 5: CRM & Ecosystem Integration Showcase    -->
+    <!-- ================================================== -->
+    <section id="integration" class="py-24 border-t border-slate-200 dark:border-white/5 relative z-10">
+      <div class="max-w-7xl mx-auto px-6">
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight mb-12 text-center">Enterprise Ecosystem
+          Architecture</h2>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+
+          <!-- Selection Column -->
+          <div class="lg:w-1/3 flex flex-col gap-2">
+            <!-- Salesforce Tab -->
+            <button @click="selectedCrm = 'salesforce'"
+              :class="selectedCrm === '' ? '' : ''" class="w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4">
+              <!-- Raw Inline Salesforce Cloud SVG simulation -->
+              <svg class="w-8 h-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M34.5 28C34.5 32.1421 31.1421 35.5 27 35.5C26.7909 35.5 26.5847 35.4897 26.3817 35.4697C25.0487 37.6015 22.6865 39 20 39C16.134 39 13 35.866 13 32C13 31.7826 13.0101 31.5676 13.0297 31.3553C10.7412 30.5638 9 28.3752 9 25.8C9 22.5967 11.5967 20 14.8 20C15.0068 20 15.211 20.0108 15.4121 20.0318C16.4862 16.5369 19.8273 14 23.8 14C28.4682 14 32.3276 17.5255 32.7661 22.0628C33.7719 22.3923 34.5 23.3421 34.5 24.5C34.5 24.8778 34.4042 25.2335 34.236 25.5441C34.4069 26.3263 34.5 27.1517 34.5 28Z"
+                  fill="#00A1E0" />
+              </svg>
+              <div class="font-semibold text-lg">Salesforce</div>
+            </button>
+            <!-- HubSpot Tab -->
+            <button @click="selectedCrm = 'hubspot'"
+              :class="selectedCrm === '' ? '' : ''" class="w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4">
+              <!-- HubSpot Mock Logo -->
+              <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#ff7a59" stroke-width="2" />
+                <path d="M12 7V17M8 12L16 12" stroke="#ff7a59" stroke-width="2" />
+              </svg>
+              <div class="font-semibold text-lg">HubSpot</div>
+            </button>
+            <!-- Zoho Tab -->
+            <button @click="selectedCrm = 'zoho'"
+              :class="selectedCrm === '' ? '' : ''" class="w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4">
+              <svg class="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1 15h-2v-6h2v6zm0-8h-2V7h2v2zm4 8h-2v-6h2v6zm0-8h-2V7h2v2z">
+                </path>
+              </svg>
+              <div class="font-semibold text-lg">Zoho CRM</div>
+            </button>
+            <!-- Calendars Tab -->
+            <button @click="selectedCrm = 'calendars'"
+              :class="selectedCrm === '' ? '' : ''" class="w-full text-left p-4 rounded-xl border transition-all flex items-center gap-4">
+              <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <div class="font-semibold text-lg">G-Workspace / Outlook</div>
+            </button>
+          </div>
+
+          <!-- Content Panel -->
+          <div class="lg:w-2/3 glass-panel glass-border rounded-2xl p-8 relative overflow-hidden min-h-[350px]">
+
+            <div
+              class="absolute top-6 right-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+              <span class="text-xs font-mono text-green-400 font-semibold tracking-wide">SOC2 SECURE ENDPOINT</span>
+            </div>
+
+            <!-- Salesforce -->
+            <div x-show="selectedCrm === 'salesforce'" x-transition.opacity>
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Salesforce CRM Integration</h3>
+              <p class="text-slate-500 dark:text-gray-400 mb-6">Native bi-directional OAuth 2.0 integration mapped perfectly to your
+                standard and custom objects.</p>
+              <div class="grid grid-cols-2 gap-4 font-mono text-xs">
+                <div class="bg-slate-100 dark:bg-black/30 p-4 rounded-lg border border-slate-200 dark:border-white/5">
+                  <div class="text-blue-400 mb-1">Supported Standard Objects:</div>
+                  <ul class="text-slate-500 dark:text-gray-400 space-y-1">
+                    <li>→ Leads</li>
+                    <li>→ Contacts</li>
+                    <li>→ Accounts</li>
+                    <li>→ Opportunities</li>
+                    <li>→ Tasks & Events</li>
+                  </ul>
+                </div>
+                <div class="bg-slate-100 dark:bg-black/30 p-4 rounded-lg border border-slate-200 dark:border-white/5">
+                  <div class="text-purple-400 mb-1">Advanced Capabilities:</div>
+                  <ul class="text-slate-500 dark:text-gray-400 space-y-1">
+                    <li>→ Custom Object Mapping</li>
+                    <li>→ Multi-Currency Support</li>
+                    <li>→ Custom Picklist Sync</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- HubSpot -->
+            <div x-show="selectedCrm === 'hubspot'" x-transition.opacity style="display: none;">
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">HubSpot CRM Integration</h3>
+              <p class="text-slate-500 dark:text-gray-400 mb-6">Instant pipeline alignment utilizing HubSpot's latest API V3 for low-latency
+                writes.</p>
+              <div class="grid grid-cols-2 gap-4 font-mono text-xs">
+                <div class="bg-slate-100 dark:bg-black/30 p-4 rounded-lg border border-slate-200 dark:border-white/5">
+                  <div class="text-[#ff7a59] mb-1">Supported Entities:</div>
+                  <ul class="text-slate-500 dark:text-gray-400 space-y-1">
+                    <li>→ Companies & Contacts</li>
+                    <li>→ Deals & Tickets</li>
+                    <li>→ Engagements (Notes/Emails)</li>
+                  </ul>
+                </div>
+                <div class="bg-slate-100 dark:bg-black/30 p-4 rounded-lg border border-slate-200 dark:border-white/5">
+                  <div class="text-green-400 mb-1">Status:</div>
+                  <div class="text-slate-500 dark:text-gray-400 mt-2">API Connection: <span class="text-green-400">Stable</span></div>
+                  <div class="text-slate-500 dark:text-gray-400">Rate Limit: <span class="text-slate-900 dark:text-white">100/sec</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Zoho -->
+            <div x-show="selectedCrm === 'zoho'" x-transition.opacity style="display: none;">
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Zoho CRM Native App</h3>
+              <p class="text-slate-500 dark:text-gray-400 mb-6">Seamless integration mapping directly into Zoho's module architecture.</p>
+            </div>
+
+            <!-- Calendars -->
+            <div x-show="selectedCrm === 'calendars'" x-transition.opacity style="display: none;">
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Calendar Ecosystems</h3>
+              <p class="text-slate-500 dark:text-gray-400 mb-6">We listen to Google Workspace and Microsoft Exchange for calendar events,
+                autonomously pulling meeting links and attendee metadata to set up the recording nodes.</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 6: Quantified Enterprise ROI       -->
+    <!-- ========================================== -->
+    <section class="py-24 border-t border-slate-200 dark:border-white/5 relative z-10 bg-slate-100 dark:bg-black/40">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 max-w-2xl mx-auto">
+          <h2 class="text-sm font-bold text-brand uppercase tracking-widest mb-2">Performance Lift</h2>
+          <h3 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">Quantified Operational Benefits</h3>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- Card 1 -->
+          <div class="glass-panel glass-border p-6 rounded-2xl relative overflow-hidden group">
+            <div class="text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">CRM Accuracy Coefficient</div>
+            <div class="text-4xl font-bold text-slate-900 dark:text-white mb-4">100%</div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="glass-panel glass-border p-6 rounded-2xl relative overflow-hidden">
+            <div class="text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">Weekly Time Saved (Per Rep)</div>
+            <div class="text-4xl font-bold text-slate-900 dark:text-white mb-4">-12 Hrs</div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="glass-panel glass-border p-6 rounded-2xl relative overflow-hidden">
+            <div class="text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">Administrative Efficiency</div>
+            <div class="text-4xl font-bold text-slate-900 dark:text-white mb-4">+38%</div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="glass-panel glass-border p-6 rounded-2xl relative overflow-hidden">
+            <div class="text-sm text-slate-500 dark:text-gray-400 mb-2 font-medium">Forecast Reporting Skew</div>
+            <div class="text-4xl font-bold text-slate-900 dark:text-white mb-4">0%</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 7: Closing Conversion Block        -->
+    <!-- ========================================== -->
+    <section class="py-24 relative overflow-hidden flex justify-center items-center border-t border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-[#0B0914]">
+      <!-- Background elements for visual weight -->
+      <div class="absolute inset-0 bg-indigo-600/5"></div>
+      <div
+        class="absolute w-[800px] h-[400px] bg-indigo-600/20 blur-[150px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+      </div>
+
+      <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">Stop Chasing Reps for Data
+          Updates.</h2>
+        <p class="text-lg md:text-xl text-slate-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
+          Deploy the infrastructure that autonomously extracts structured CRM data from live conversations, giving you
+          100% accurate forecasts with zero manual overhead.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="../auth.html"
+            class="w-full sm:w-auto text-base font-bold bg-indigo-600 text-white hover:bg-indigo-500 px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+            Start Free Trial
+          </a>
+          <a href="../pricing.html"
+            class="w-full sm:w-auto text-base font-bold text-slate-900 dark:text-white bg-white dark:bg-[#121215] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 px-8 py-4 rounded-xl transition-all shadow-sm">
+            Calculate Ops ROI
+          </a>
+        </div>
+
+        <!-- Telemetry Banner -->
+        <div
+          class="mt-16 inline-flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500 dark:text-gray-500 font-medium bg-slate-100 dark:bg-black/40 px-6 py-2 rounded-full border border-slate-200 dark:border-white/5">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Global API Cluster Online
+          </div>
+          <div class="hidden sm:block w-1 h-1 rounded-full bg-gray-700"></div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4">
+              </path>
+            </svg>
+            24.5M Database Records Synced Today
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+    <!-- SECTION 12: Directory Footer Layout -->
+    <footer class="bg-white dark:bg-[#0c0c0e] border-t border-lightBorder dark:border-darkBorder pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
+                <!-- Brand Col -->
+                <div class="col-span-2 md:col-span-2 flex flex-col">
+                    <a href="../index.html" class="flex items-center gap-2.5 mb-6">
+                        <img src="/logo.png" alt="Sales Saathi Logo" class="h-5 w-auto object-contain" />
+                        <span class="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Sales Saathi</span>
+                    </a>
+                    <p class="text-sm text-slate-500 dark:text-zinc-400 font-medium mb-6 max-w-sm">The world's first AI-powered sales co-pilot designed to automate research, guide live discovery, and enforce CRM hygiene.</p>
+                    <div class="flex gap-4">
+                        <a href="../index.html" class="text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                        </a>
+                        <a href="../index.html" class="text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        </a>
+                        <a href="../index.html" class="text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </a>
+                    </div>
+                </div>
+                <!-- Links 1 -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-2">Product</h4>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Features</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Integrations</a>
+                    <a href="../index.html#pricing" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Pricing</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Changelog</a>
+                </div>
+                <!-- Links 2 -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-2">Resources</h4>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Documentation</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Blog</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Community</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Help Center</a>
+                </div>
+                <!-- Links 3 -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-2">Company</h4>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">About Us</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Careers</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Privacy Policy</a>
+                    <a href="../index.html" class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Terms of Service</a>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-lightBorder dark:border-darkBorder flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-slate-400 dark:text-zinc-500 font-medium">© 2026 Sales Saathi Inc. All rights reserved.</p>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 dark:text-zinc-500 font-medium">System Status:</span>
+                    <span class="flex items-center gap-1.5 text-xs font-bold text-brandEmerald bg-brandEmerald/10 px-2 py-1 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-brandEmerald"></span> 100% Operational</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
+

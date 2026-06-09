@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ 
+    scrolled: false, 
+    isLoggedIn: $persist(false), 
+    userName: $persist('Alex Rivera'), 
+    activeTab: 'all', 
+    searchInput: '', 
+    selectedAcademyFilter: 'beginner', 
+    activeChangelogIndex: 0, 
+    profileDropdownOpen: false,
+    mobileMenuOpen: false,
+    activeDropdown: null,
+    searchOpen: false
+}" @keydown.window.prevent.cmd.k="searchOpen = true; setTimeout(() => $refs.searchInput.focus(), 100)" @keydown.window.prevent.ctrl.k="searchOpen = true; setTimeout(() => $refs.searchInput.focus(), 100)" @scroll.window="scrolled = (window.pageYOffset > 20)" >
+
+<head>
+    <!-- Global Theme Manager -->
+    <script src="/js/theme-manager.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources & AI Academy | Sales Saathi Enterprise</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js Plugins -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        darkBg: '#09090b',
+                        darkCard: '#18181b',
+                        darkBorder: 'rgba(255,255,255,0.08)',
+                        lightBorder: 'rgba(15,23,42,0.08)',
+                        brandIndigo: '#4f46e5',
+                        brandViolet: '#6366f1',
+                        brandEmerald: '#10b981' }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .dark .glass-panel {
+            background: rgba(24, 24, 27, 0.7);
+        }
+
+        .bento-card {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-4px);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            letter-spacing: -0.03em;
+        }
+    </style>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTI4IDEyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNjQgMTI4QzI4LjY1NCAxMjggMCA5OS4zNDYgMCA2NEMwIDI4LjY1NCAyOC42NTQgMCA2NCAwYzM1LjM0NiAwIDY0IDI4LjY1NCA2NCA2NEMxMjggOTkuMzQ2IDk5LjM0NiAxMjggNjQgMTI4WiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzIzNV8zNzkpIi8+PHBhdGggZD0iTTg3LjY4IDQxLjI4SDQwLjMybC02Ljg0OCAxMS44MDhoNDcuMzY4TDUyLjUzNiA4Ni43Mkg4OS42bDYuODQ4LTExLjgwOEg0OS4yMTZsMzguNDY0LTMzLjYxMloiIGZpbGw9IiNmZmYiLz48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMjM1XzM3OSIgeDE9IjY0IiB5MT0iMCIgeDI9IjY0IiB5Mj0iMTI4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzYzNjZmMSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzRmNDZlNSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==">
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-zinc-100 font-sans antialiased min-h-screen transition-colors duration-300 selection:bg-brandIndigo selection:text-white"
+    @keydown.window.prevent.cmd.k="document.getElementById('globalSearch').focus()"
+    @keydown.window.prevent.ctrl.k="document.getElementById('globalSearch').focus()">
+
+        <!-- Global Preloader Engine -->
+    <div x-data="{ pageLoaded: false }"
+         x-init="window.addEventListener('load', () => { setTimeout(() => pageLoaded = true, 300) })"
+         x-show="!pageLoaded"
+         x-transition:leave="transition ease-in duration-400"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-50 dark:bg-darkBg"
+         x-cloak>
+        <div class="relative w-16 h-16 animate-pulse">
+            <div class="absolute inset-0 bg-brandIndigo/40 blur-2xl rounded-full"></div>
+            <img src="/logo.png" alt="Sales Saathi Loading" class="relative z-10 w-full h-full drop-shadow-2xl object-contain" />
+        </div>
+    </div>
+
+    <!-- SECTION 1: Sticky Navigation Header -->
+        <!-- SECTION 1: Dynamic Global Header Mount -->
+    <div id="global-header-mount"></div>
+    <script type="module" src="/js/auth-manager.js"></script>
+    <script type="module" src="/js/header-manager.js"></script>
+
+    <!-- SECTION 1: Cinematic Search & Hero Canvas -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-24 relative overflow-hidden bg-slate-50 dark:bg-darkBg">
+        <div
+            class="absolute top-1/4 left-1/4 w-96 h-96 bg-brandIndigo/20 dark:bg-brandIndigo/10 rounded-full blur-[120px] pointer-events-none">
+        </div>
+        <div
+            class="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-brandEmerald/10 rounded-full blur-[150px] pointer-events-none">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+
+            <h1
+                class="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6 leading-[1.1]">
+                Sales Resources, Guides & <br class="hidden md:block" /><span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-brandIndigo to-brandViolet">AI Learning
+                    Center</span>
+            </h1>
+            <p
+                class="text-lg md:text-xl text-slate-600 dark:text-zinc-400 max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
+                Master the art of modern prospecting. Explore our ecosystem of templates, deep-dive playbooks, video
+                tutorials, and interactive AI modules.
+            </p>
+
+            <div class="max-w-3xl mx-auto relative group">
+                <input id="globalSearch" type="text" readonly @click="searchOpen = true; setTimeout(() => $refs.searchInput.focus(), 100)"
+                    placeholder="Search resources, templates, or playbooks..."
+                    class="cursor-pointer w-full pl-14 pr-20 py-5 rounded-2xl bg-white dark:bg-darkCard border border-lightBorder dark:border-darkBorder focus:ring-2 focus:ring-brandIndigo outline-none shadow-xl text-lg transition-all dark:text-white placeholder-slate-400 font-medium">
+                <svg class="w-7 h-7 text-slate-400 group-focus-within:text-brandIndigo transition-colors absolute left-5 top-1/2 transform -translate-y-1/2"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <div class="absolute inset-y-0 right-4 flex items-center">
+                    <div
+                        class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-zinc-800 text-xs font-bold text-slate-500 dark:text-zinc-400 shadow-sm">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M18 10h-2V8c0-1.65-1.35-3-3-3s-3 1.35-3 3v2H8c-1.65 0-3 1.35-3 3v2c0 1.65 1.35 3 3 3h2v2c0 1.65 1.35 3 3 3s3-1.35 3-3v-2h2c1.65 0 3-1.35 3-3v-2c0-1.65-1.35-3-3-3zm-6-2c0-.55.45-1 1-1s1 .45 1 1v2h-2V8zm-2 6c-.55 0-1-.45-1-1s.45-1 1-1h2v2h-2zm6 2c0 .55-.45 1-1 1h-2v-2h2v2z" />
+                        </svg>
+                        <span class="text-sm">K</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: High-Density Bento Category Matrix -->
+    <section class="py-12 relative z-20 border-t border-lightBorder dark:border-darkBorder bg-white dark:bg-darkBg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Bento 1 -->
+                <a href="#featured"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-brandIndigo hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-indigo-50 dark:bg-brandIndigo/10 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100 dark:border-brandIndigo/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-brandIndigo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-brandIndigo transition-colors">
+                            Blog Articles</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Deep dives into sales
+                            methodology.</p>
+                    </div>
+                </a>
+                <!-- Bento 2 -->
+                <a href="#featured"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-emerald-500 hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
+                            Sales Playbooks</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Step-by-step guides for closing
+                            deals.</p>
+                    </div>
+                </a>
+                <!-- Bento 3 -->
+                <a href="#templates"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-amber-500 hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-amber-50 dark:bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors">
+                            Free Templates</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Copy-paste email hooks and
+                            agendas.</p>
+                    </div>
+                </a>
+                <!-- Bento 4 -->
+                <a href="#case-studies"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-rose-500 hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-rose-50 dark:bg-rose-500/10 rounded-xl flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-rose-500 transition-colors">
+                            Case Studies</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Quantified ROI and customer
+                            wins.</p>
+                    </div>
+                </a>
+                <!-- Bento 5 -->
+                <a href="#webinars"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-purple-500 hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-purple-50 dark:bg-purple-500/10 rounded-xl flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-purple-500 transition-colors">
+                            On-Demand Webinars</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Streaming sessions with
+                            experts.</p>
+                    </div>
+                </a>
+                <!-- Bento 6 -->
+                <a href="#video-coaching"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-blue-500 hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors">
+                            Video Tutorials</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Micro-learning coaching
+                            modules.</p>
+                    </div>
+                </a>
+                <!-- Bento 7 -->
+                <a href="#academy"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-brandViolet hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-brandViolet" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            <path
+                                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-brandViolet transition-colors">
+                            AI Sales Academy</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Structured curriculum for SDRs
+                            to AEs.</p>
+                    </div>
+                </a>
+                <!-- Bento 8 -->
+                <a href="#changelog"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-cyan-500 hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-cyan-50 dark:bg-cyan-500/10 rounded-xl flex items-center justify-center shrink-0 border border-cyan-100 dark:border-cyan-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-cyan-500 transition-colors">
+                            Product Updates</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Latest platform releases &
+                            changelog.</p>
+                    </div>
+                </a>
+                <!-- Bento 9 -->
+                <a href="#featured"
+                    class="bento-card p-6 rounded-3xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-fuchsia-500 hover:shadow-lg transition-all duration-300 group flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-fuchsia-50 dark:bg-fuchsia-500/10 rounded-xl flex items-center justify-center shrink-0 border border-fuchsia-100 dark:border-fuchsia-500/20 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-fuchsia-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="text-base font-bold mb-1 text-slate-900 dark:text-white group-hover:text-fuchsia-500 transition-colors">
+                            Deep Industry Reports</h3>
+                        <p class="text-xs font-medium text-slate-600 dark:text-zinc-400">Data-driven insights for 2026
+                            pipelines.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: Featured Resources Matrix -->
+    <section id="featured" class="py-24 bg-white dark:bg-darkBg relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-12">
+                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">Featured Insights</h2>
+                <a href="#"
+                    class="hidden sm:flex items-center gap-2 text-sm font-bold text-brandIndigo hover:text-brandViolet transition-colors">
+                    View all publications
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div
+                    class="group bg-slate-50 dark:bg-darkCard rounded-[2rem] border border-lightBorder dark:border-darkBorder overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full cursor-pointer relative">
+                    <div class="h-48 bg-gradient-to-br from-indigo-500 to-purple-600 relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]">
+                        </div>
+                        <div
+                            class="absolute top-4 left-4 bg-slate-300 dark:bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-900 dark:text-white border border-white/30">
+                            Playbook</div>
+                        <div
+                            class="absolute bottom-4 right-4 bg-slate-100 dark:bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border border-slate-200 dark:border-white/10">
+                            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg> 15 min read
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-1">
+                        <h3
+                            class="text-2xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-brandIndigo transition-colors leading-tight">
+                            The AI Sales Playbook for 2026</h3>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-6 flex-1 line-clamp-3">A
+                            comprehensive guide to integrating LLMs into your SDR outreach motion without sounding like
+                            a robot. Learn the exact prompts that drive 40% higher response rates.</p>
+                        <div
+                            class="flex items-center justify-between mt-auto pt-6 border-t border-lightBorder dark:border-darkBorder">
+                            <div class="flex items-center gap-3">
+                                <img src="https://ui-avatars.com/api/?name=Sarah+Chen&background=10b981&color=fff"
+                                    class="w-8 h-8 rounded-full border-2 border-white dark:border-darkCard">
+                                <span class="text-xs font-bold text-slate-700 dark:text-zinc-300">Sarah Chen</span>
+                            </div>
+                            <span
+                                class="text-brandIndigo font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Read<svg
+                                    class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div
+                    class="group bg-slate-50 dark:bg-darkCard rounded-[2rem] border border-lightBorder dark:border-darkBorder overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full cursor-pointer relative">
+                    <div class="h-48 bg-gradient-to-br from-emerald-500 to-teal-700 relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]">
+                        </div>
+                        <div
+                            class="absolute top-4 left-4 bg-slate-300 dark:bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-900 dark:text-white border border-white/30">
+                            Industry Report</div>
+                        <div
+                            class="absolute bottom-4 right-4 bg-slate-100 dark:bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border border-slate-200 dark:border-white/10">
+                            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg> 4.2 MB PDF
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-1">
+                        <h3
+                            class="text-2xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-emerald-500 transition-colors leading-tight">
+                            State of Modern Prospecting</h3>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-6 flex-1 line-clamp-3">We
+                            analyzed 5 million cold emails and 2 million discovery calls to find the anatomical
+                            structure of a winning deal in the enterprise SaaS sector.</p>
+                        <div
+                            class="flex items-center justify-between mt-auto pt-6 border-t border-lightBorder dark:border-darkBorder">
+                            <div class="flex items-center gap-3">
+                                <img src="https://ui-avatars.com/api/?name=David+Kim&background=f59e0b&color=fff"
+                                    class="w-8 h-8 rounded-full border-2 border-white dark:border-darkCard">
+                                <span class="text-xs font-bold text-slate-700 dark:text-zinc-300">David Kim</span>
+                            </div>
+                            <span
+                                class="text-emerald-500 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Download<svg
+                                    class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div
+                    class="group bg-slate-50 dark:bg-darkCard rounded-[2rem] border border-lightBorder dark:border-darkBorder overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full cursor-pointer relative">
+                    <div class="h-48 bg-gradient-to-br from-amber-500 to-rose-600 relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]">
+                        </div>
+                        <div
+                            class="absolute top-4 left-4 bg-slate-300 dark:bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-900 dark:text-white border border-white/30">
+                            Masterclass</div>
+                        <div
+                            class="absolute bottom-4 right-4 bg-slate-100 dark:bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 border border-slate-200 dark:border-white/10">
+                            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                                </path>
+                            </svg> 45 min Video
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-1">
+                        <h3
+                            class="text-2xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-amber-500 transition-colors leading-tight">
+                            The Sales Productivity Guide</h3>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-6 flex-1 line-clamp-3">Stop
+                            doing data entry. Learn how to architect your CRM workflows so reps spend 90% of their time
+                            actually selling instead of logging activities.</p>
+                        <div
+                            class="flex items-center justify-between mt-auto pt-6 border-t border-lightBorder dark:border-darkBorder">
+                            <div class="flex items-center gap-3">
+                                <img src="https://ui-avatars.com/api/?name=Elena+Rostova&background=ec4899&color=fff"
+                                    class="w-8 h-8 rounded-full border-2 border-white dark:border-darkCard">
+                                <span class="text-xs font-bold text-slate-700 dark:text-zinc-300">Elena Rostova</span>
+                            </div>
+                            <span
+                                class="text-amber-500 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">Watch<svg
+                                    class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: Filterable Template Library System -->
+    <section id="templates"
+        class="py-24 bg-slate-50 dark:bg-[#0c0c0e] border-y border-lightBorder dark:border-darkBorder relative z-10"
+        x-data="{ 
+                activeTab: 'all',
+                isModalOpen: false,
+                activeModalData: {},
+                templates: [
+                    { category: 'email', title: 'The Permission-Based Cold Email', desc: 'Gets a 22% reply rate by asking for permission rather than pitching immediately.', tag: 'Cold Emails', content: 'Hi [Name],\n\nI noticed [Recent Trigger Event].\n\nWe recently helped [Similar Company] achieve [Specific Result] using our framework.\n\nWould you be open to me sending over a brief 2-minute video explaining how?' },
+                    { category: 'email', title: 'The Trigger-Event Follow Up', desc: 'Leverages a recent company news event to establish immediate relevance.', tag: 'Cold Emails', content: 'Hi [Name],\n\nFollowing up on my last note regarding [Trigger Event].\n\nSince you are focusing on [Strategic Priority], I thought this case study might be relevant: [Link].\n\nWorth a brief chat next week?' },
+                    { category: 'linkedin', title: 'The Value-Add Connection Request', desc: 'Bypasses the typical pitch slap with a highly targeted piece of content.', tag: 'LinkedIn Hooks', content: 'Hi [Name], loved your recent post on [Topic]. We just published a deep-dive report on exactly this challenge. Happy to share the link if you\'re interested in comparing notes!' },
+                    { category: 'linkedin', title: 'The Voice Note Script', desc: 'A 30-second script for LinkedIn voice notes that guarantees a listen.', tag: 'LinkedIn Hooks', content: 'Hey [Name], [Your Name] here. Loved your perspective on [Topic]. Quick question: are you currently dealing with [Specific Pain Point]? We built a framework to solve that. Let me know if you want details.' },
+                    { category: 'meeting', title: 'The Mutual Action Plan Agenda', desc: 'Structures your discovery calls to ensure both parties agree on next steps.', tag: 'Meeting Agendas', content: 'Agenda:\n1. Introductions & Goals (5 min)\n2. Deep dive into [Pain Point] (15 min)\n3. Review Capabilities (10 min)\n4. Define Mutual Action Plan & Next Steps (10 min)' },
+                    { category: 'proposal', title: 'The Enterprise ROI Business Case', desc: 'A one-page framework that your champion can take directly to the CFO.', tag: 'Proposal Frameworks', content: 'Executive Summary:\nBy implementing our solution, [Company] is projected to save 14 hours/rep/week, resulting in an annualized cost savings of $[Amount] and a pipeline increase of 42% within Q1.' }
+                ]
+             }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Template Library
+                </h2>
+                <p class="text-lg text-slate-600 dark:text-zinc-400 font-medium">Copy-paste frameworks verified across
+                    millions of B2B interactions.</p>
+            </div>
+
+            <!-- Alpine Tab Navigation -->
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-12">
+                <button @click="activeTab = 'all'"
+                    :class="activeTab === 'all' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-white dark:bg-darkCard text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border-lightBorder dark:border-darkBorder' px-6 py-2.5 rounded-full border font-bold text-sm transition-all shadow-sm outline-none">All
+                    Templates</button>
+                <button @click="activeTab = 'email'"
+                    :class="activeTab === 'email' ? 'bg-brandIndigo text-slate-900 dark:text-white border-brandIndigo' : 'bg-white dark:bg-darkCard text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border-lightBorder dark:border-darkBorder' px-6 py-2.5 rounded-full border font-bold text-sm transition-all shadow-sm outline-none">Cold
+                    Emails</button>
+                <button @click="activeTab = 'linkedin'"
+                    :class="activeTab === 'linkedin' ? 'bg-blue-500 text-slate-900 dark:text-white border-blue-500' : 'bg-white dark:bg-darkCard text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border-lightBorder dark:border-darkBorder' px-6 py-2.5 rounded-full border font-bold text-sm transition-all shadow-sm outline-none">LinkedIn
+                    Hooks</button>
+                <button @click="activeTab = 'meeting'"
+                    :class="activeTab === 'meeting' ? 'bg-emerald-500 text-slate-900 dark:text-white border-emerald-500' : 'bg-white dark:bg-darkCard text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border-lightBorder dark:border-darkBorder' px-6 py-2.5 rounded-full border font-bold text-sm transition-all shadow-sm outline-none">Meeting
+                    Agendas</button>
+                <button @click="activeTab = 'proposal'"
+                    :class="activeTab === 'proposal' ? 'bg-amber-500 text-slate-900 dark:text-white border-amber-500' : 'bg-white dark:bg-darkCard text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border-lightBorder dark:border-darkBorder' px-6 py-2.5 rounded-full border font-bold text-sm transition-all shadow-sm outline-none">Proposal
+                    Frameworks</button>
+            </div>
+
+            <!-- Template Grid (Alpine loops through data) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="(tpl, index) in templates" :key="index">
+                    <div x-data="{ copied: false }" 
+                        x-show="activeTab === 'all' || activeTab === tpl.category" x-transition.opacity.duration.300ms
+                        class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-lightBorder dark:border-darkBorder hover:border-brandIndigo hover:shadow-xl transition-all duration-300 group flex flex-col h-full relative overflow-hidden">
+
+                        <div
+                            class="absolute top-0 left-0 w-1 h-full bg-slate-200 dark:bg-zinc-800 group-hover:bg-brandIndigo transition-colors">
+                        </div>
+
+                        <div class="pl-3 flex flex-col h-full">
+                            <div class="flex items-start justify-between mb-3 cursor-pointer" @click="activeModalData = tpl; isModalOpen = true">
+                                <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-zinc-500" x-text="tpl.tag"></span>
+                                <!-- Open Modal Icon -->
+                                <button class="text-slate-400 group-hover:text-brandIndigo outline-none transition-transform duration-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </button>
+                            </div>
+
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 leading-tight group-hover:text-brandIndigo transition-colors cursor-pointer"
+                                @click="activeModalData = tpl; isModalOpen = true" x-text="tpl.title"></h3>
+                            <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-6 flex-1 leading-relaxed cursor-pointer"
+                                @click="activeModalData = tpl; isModalOpen = true" x-text="tpl.desc"></p>
+
+                            <div
+                                class="flex items-center justify-between mt-auto border-t border-lightBorder dark:border-darkBorder pt-4 cursor-pointer"
+                                @click="navigator.clipboard.writeText(tpl.content); copied = true; setTimeout(() => copied = false, 2000)">
+                                <span
+                                    class="text-sm font-bold transition-colors"
+                                    :class="copied ? 'text-brandEmerald' : 'text-slate-400 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-300'"
+                                    x-text="copied ? 'Copied to Clipboard!' : 'Copy to clipboard'"></span>
+                                <div
+                                    class="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                                    :class="copied ? 'bg-brandEmerald/20 text-brandEmerald' : 'bg-slate-50 dark:bg-zinc-800 text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-brandIndigo/10 group-hover:text-brandIndigo'">
+                                    <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                    <svg x-show="copied" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Template Modal Popup -->
+            <div x-show="isModalOpen" style="display: none;"
+                 class="fixed inset-0 z-50 overflow-y-auto" 
+                 aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                
+                <!-- Background overlay -->
+                <div x-show="isModalOpen" 
+                     x-transition:enter="ease-out duration-300" 
+                     x-transition:enter-start="opacity-0" 
+                     x-transition:enter-end="opacity-100" 
+                     x-transition:leave="ease-in duration-200" 
+                     x-transition:leave-start="opacity-100" 
+                     x-transition:leave-end="opacity-0" 
+                     class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" 
+                     @click="isModalOpen = false"></div>
+
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <!-- Modal panel -->
+                    <div x-show="isModalOpen" 
+                         x-transition:enter="ease-out duration-300" 
+                         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                         x-transition:leave="ease-in duration-200" 
+                         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                         class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-darkCard text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-lightBorder dark:border-darkBorder">
+                        
+                        <!-- Modal Header -->
+                        <div class="px-6 py-4 border-b border-lightBorder dark:border-darkBorder flex items-center justify-between bg-slate-50 dark:bg-[#0c0c0e]">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-brandIndigo/10 text-brandIndigo flex items-center justify-center">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <span class="text-xs font-extrabold uppercase tracking-widest text-slate-500 dark:text-zinc-400" x-text="activeModalData.tag"></span>
+                            </div>
+                            <button @click="isModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 outline-none transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="px-6 py-6 sm:p-8">
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3" id="modal-title" x-text="activeModalData.title"></h3>
+                            <p class="text-slate-600 dark:text-zinc-400 mb-6 font-medium" x-text="activeModalData.desc"></p>
+                            
+                            <div class="bg-slate-50 dark:bg-[#0c0c0e] rounded-xl p-5 border border-slate-200 dark:border-zinc-800 relative">
+                                <h5 class="text-[10px] font-extrabold uppercase tracking-widest text-brandIndigo mb-3">Template Script</h5>
+                                <p class="text-sm text-slate-700 dark:text-zinc-300 whitespace-pre-wrap font-mono leading-relaxed" x-text="activeModalData.content"></p>
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="px-6 py-4 bg-slate-50 dark:bg-[#0c0c0e] border-t border-lightBorder dark:border-darkBorder flex items-center justify-end gap-3" x-data="{ modalCopied: false }">
+                            <button @click="isModalOpen = false" class="px-5 py-2.5 rounded-lg text-sm font-bold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors">Close</button>
+                            <button @click="navigator.clipboard.writeText(activeModalData.content); modalCopied = true; setTimeout(() => modalCopied = false, 2000)" 
+                                    class="px-5 py-2.5 rounded-lg text-sm font-bold text-slate-900 dark:text-white transition-colors flex items-center gap-2"
+                                    :class="modalCopied ? 'bg-brandEmerald hover:bg-emerald-600' : 'bg-brandIndigo hover:bg-indigo-500'">
+                                <svg x-show="!modalCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                <svg x-show="modalCopied" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span x-text="modalCopied ? 'Copied to Clipboard!' : 'Copy Template'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: AI Sales Academy & Progress Deck -->
+    <section id="academy" class="py-24 bg-white dark:bg-darkBg relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div class="max-w-2xl">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">AI Sales Academy
+                    </h2>
+                    <p class="text-lg text-slate-600 dark:text-zinc-400 font-medium">Structured, interactive curriculum
+                        modules designed to upskill your SDRs and AEs into AI-augmented closers.</p>
+                </div>
+
+                <!-- Academy Tier Selector -->
+                <div
+                    class="flex items-center bg-slate-100 dark:bg-darkCard p-1.5 rounded-xl border border-lightBorder dark:border-darkBorder self-start md:self-auto">
+                    <button @click="selectedAcademyFilter = 'beginner'"
+                        :class="selectedAcademyFilter === 'beginner' ? 'bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200' px-4 py-2 rounded-lg text-sm font-bold transition-all outline-none">Beginner</button>
+                    <button @click="selectedAcademyFilter = 'intermediate'"
+                        :class="selectedAcademyFilter === 'intermediate' ? 'bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200' px-4 py-2 rounded-lg text-sm font-bold transition-all outline-none">Intermediate</button>
+                    <button @click="selectedAcademyFilter = 'advanced'"
+                        :class="selectedAcademyFilter === 'advanced' ? 'bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200' px-4 py-2 rounded-lg text-sm font-bold transition-all outline-none">Advanced</button>
+                </div>
+            </div>
+
+            <!-- Curriculum Deck -->
+            <div
+                class="bg-slate-50 dark:bg-darkCard rounded-[2rem] border border-lightBorder dark:border-darkBorder p-8 md:p-12 shadow-xl">
+                <!-- Beginner Tier Data -->
+                <div x-show="selectedAcademyFilter === 'beginner'" x-transition.opacity.duration.300ms
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Module 1 -->
+                    <div class="group">
+                        <div class="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full mb-6 overflow-hidden">
+                            <div class="h-full bg-brandEmerald w-full"></div>
+                        </div>
+                        <span class="text-xs font-bold text-brandEmerald uppercase tracking-widest mb-2 block">Module 1
+                            • Completed</span>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">CRM Hygiene 101</h4>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-4">Learn why clean data is
+                            the fuel for any AI sales tool and how to automate entry.</p>
+                        <a href="#"
+                            class="text-sm font-bold text-slate-900 dark:text-white hover:text-brandIndigo transition-colors flex items-center gap-1">Review
+                            Module <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg></a>
+                    </div>
+                    <!-- Module 2 -->
+                    <div class="group">
+                        <div class="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full mb-6 overflow-hidden">
+                            <div class="h-full bg-brandIndigo w-3/4"></div>
+                        </div>
+                        <span class="text-xs font-bold text-brandIndigo uppercase tracking-widest mb-2 block">Module 2 •
+                            In Progress (75%)</span>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Intro to AI Prompting</h4>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-4">Stop chatting and start
+                            commanding. Basic structures for drafting cold emails via LLMs.</p>
+                        <a href="#"
+                            class="text-sm font-bold text-brandIndigo hover:text-brandViolet transition-colors flex items-center gap-1">Resume
+                            Module <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg></a>
+                    </div>
+                    <!-- Module 3 -->
+                    <div class="group">
+                        <div class="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full mb-6 overflow-hidden">
+                            <div class="h-full bg-slate-400 dark:bg-zinc-600 w-0"></div>
+                        </div>
+                        <span
+                            class="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-2 block">Module
+                            3 • Locked</span>
+                        <h4 class="text-xl font-bold text-slate-400 dark:text-zinc-500 mb-3">Active Listening &
+                            Transcripts</h4>
+                        <p class="text-sm font-medium text-slate-400 dark:text-zinc-500 mb-4">Leveraging live call
+                            transcription features to spot buying signals.</p>
+                        <span
+                            class="text-sm font-bold text-slate-400 dark:text-zinc-600 flex items-center gap-1">Complete
+                            Module 2 to Unlock <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                </path>
+                            </svg></span>
+                    </div>
+                </div>
+
+                <!-- Intermediate Tier Data -->
+                <div x-show="selectedAcademyFilter === 'intermediate'" x-transition.opacity.duration.300ms x-cloak
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Module 1 -->
+                    <div class="group">
+                        <div class="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full mb-6 overflow-hidden">
+                            <div class="h-full bg-slate-400 dark:bg-zinc-600 w-0"></div>
+                        </div>
+                        <span
+                            class="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-2 block">Module
+                            1 • Not Started</span>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-3">Objection Handling with AI
+                        </h4>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-4">Using live battlecards
+                            during competitive discovery calls.</p>
+                        <a href="#"
+                            class="text-sm font-bold text-brandIndigo hover:text-brandViolet transition-colors flex items-center gap-1">Start
+                            Module <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg></a>
+                    </div>
+                    <!-- Module 2 -->
+                    <div class="group">
+                        <div class="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full mb-6 overflow-hidden">
+                            <div class="h-full bg-slate-400 dark:bg-zinc-600 w-0"></div>
+                        </div>
+                        <span
+                            class="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest mb-2 block">Module
+                            2 • Locked</span>
+                        <h4 class="text-xl font-bold text-slate-400 dark:text-zinc-500 mb-3">Multi-Threading Context
+                        </h4>
+                        <p class="text-sm font-medium text-slate-400 dark:text-zinc-500 mb-4">Mapping buyer circles
+                            automatically from unstructured email threads.</p>
+                        <span
+                            class="text-sm font-bold text-slate-400 dark:text-zinc-600 flex items-center gap-1">Complete
+                            Module 1 to Unlock <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                </path>
+                            </svg></span>
+                    </div>
+                </div>
+
+                <!-- Advanced Tier Data -->
+                <div x-show="selectedAcademyFilter === 'advanced'" x-transition.opacity.duration.300ms x-cloak
+                    class="grid grid-cols-1 gap-8 text-center py-8">
+                    <div
+                        class="w-16 h-16 bg-slate-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-200 dark:border-darkBorder">
+                        <svg class="w-8 h-8 text-slate-400 dark:text-zinc-500" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h4 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Advanced Modules Locked</h4>
+                    <p class="text-slate-600 dark:text-zinc-400 font-medium max-w-md mx-auto mb-6">You must complete the
+                        Intermediate tier curriculum to unlock Advanced workflows like Custom API Integrations and
+                        Predictable Revenue Modeling.</p>
+                    <button @click="selectedAcademyFilter = 'intermediate'"
+                        class="px-6 py-3 bg-brandIndigo hover:bg-brandViolet text-slate-900 dark:text-white font-bold rounded-xl shadow-lg transition-all mx-auto outline-none">Go
+                        to Intermediate Tier</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 6: Quantified B2B Case Studies -->
+    <section id="case-studies"
+        class="py-24 bg-slate-50 dark:bg-[#0c0c0e] border-y border-lightBorder dark:border-darkBorder relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Verified Impact
+                    Outcomes</h2>
+                <p class="text-lg text-slate-600 dark:text-zinc-400 font-medium">Real data from enterprise teams
+                    standardizing on Sales Saathi.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Case Study 1 -->
+                <div
+                    class="bg-white dark:bg-darkCard rounded-[2rem] p-8 md:p-10 border border-lightBorder dark:border-darkBorder shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group">
+                    <!-- Abstract chart bg -->
+                    <div
+                        class="absolute bottom-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-emerald-500/10 transition-colors">
+                    </div>
+
+                    <div class="inline-flex bg-white rounded-lg px-3 py-2 mb-10 shadow-sm border border-slate-100">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Enterprise Logo" class="h-5 object-contain">
+                    </div>
+
+                    <h3
+                        class="text-2xl font-bold text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-emerald-500 transition-colors">
+                        How a Global Tech Giant Reduced Ramp Time by 50%</h3>
+                    <p class="text-slate-600 dark:text-zinc-400 font-medium mb-10 leading-relaxed">By implementing the
+                        AI Live Coach, new SDRs reached full quota capacity in 3 months instead of 6, strictly by
+                        utilizing real-time objection handling prompts.</p>
+
+                    <div class="grid grid-cols-2 gap-6 pt-8 border-t border-lightBorder dark:border-darkBorder">
+                        <div>
+                            <p class="text-4xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">12,000
+                            </p>
+                            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">
+                                Hours Optimized/Yr</p>
+                        </div>
+                        <div>
+                            <p class="text-4xl font-extrabold text-emerald-500 mb-1 tracking-tight">+42%</p>
+                            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Win
+                                Rate Lift</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case Study 2 -->
+                <div
+                    class="bg-white dark:bg-darkCard rounded-[2rem] p-8 md:p-10 border border-lightBorder dark:border-darkBorder shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group">
+                    <div
+                        class="absolute bottom-0 right-0 w-64 h-64 bg-brandIndigo/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-brandIndigo/10 transition-colors">
+                    </div>
+
+                    <div class="h-8 mb-10 text-brandIndigo font-extrabold text-xl tracking-tight flex items-center">
+                        Acme FinTech
+                    </div>
+
+                    <h3
+                        class="text-2xl font-bold text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-brandIndigo transition-colors">
+                        Achieving 100% CRM Compliance Without Manager Nagging</h3>
+                    <p class="text-slate-600 dark:text-zinc-400 font-medium mb-10 leading-relaxed">Leveraging the
+                        Automated Summary engine, Account Executives saved an average of 45 minutes per day, immediately
+                        updating pipeline vectors post-call.</p>
+
+                    <div class="grid grid-cols-2 gap-6 pt-8 border-t border-lightBorder dark:border-darkBorder">
+                        <div>
+                            <p class="text-4xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">100%
+                            </p>
+                            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">CRM
+                                Hygiene</p>
+                        </div>
+                        <div>
+                            <p class="text-4xl font-extrabold text-brandIndigo mb-1 tracking-tight">-$2.1M</p>
+                            <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">
+                                Churn Prevented</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 7: On-Demand Webinars & Events Calendar -->
+    <section id="webinars" class="py-24 bg-white dark:bg-darkBg relative z-10" x-data="{ showModal: false, loading: false, success: false, sessionTitle: '', email: '', company: '', role: '' }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-12">
+                <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">Upcoming Live Sessions</h2>
+                <a href="#"
+                    class="hidden sm:flex items-center gap-2 text-sm font-bold text-brandIndigo hover:text-brandViolet transition-colors">
+                    View on-demand library
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Event 1 -->
+                <div
+                    class="flex flex-col sm:flex-row gap-6 p-6 bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder rounded-3xl hover:border-brandIndigo transition-colors group">
+                    <div
+                        class="w-full sm:w-48 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-slate-900 dark:text-white flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]">
+                        </div>
+                        <span
+                            class="text-sm font-bold uppercase tracking-widest opacity-80 mb-1 relative z-10">OCT</span>
+                        <span class="text-5xl font-extrabold mb-1 relative z-10">14</span>
+                        <span class="text-sm font-medium opacity-90 relative z-10">10:00 AM PST</span>
+                    </div>
+                    <div class="flex flex-col justify-between flex-1 py-2">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span
+                                    class="px-2 py-1 bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-extrabold uppercase tracking-widest rounded flex items-center gap-1.5"><span
+                                        class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>Live
+                                    Stream</span>
+                                <span
+                                    class="px-2 py-1 bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 text-[10px] font-extrabold uppercase tracking-widest rounded">Product
+                                    Tour</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">Mastering
+                                the New AI Discovery Features</h3>
+                            <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-6 line-clamp-2">Join our
+                                lead product manager for a deep dive into configuring custom LLM prompts for your
+                                specific industry verticals.</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="flex -space-x-3">
+                                <img src="https://ui-avatars.com/api/?name=Marcus&background=4f46e5&color=fff"
+                                    class="w-10 h-10 rounded-full border-2 border-slate-50 dark:border-darkCard">
+                                <img src="https://ui-avatars.com/api/?name=Jessica&background=ec4899&color=fff"
+                                    class="w-10 h-10 rounded-full border-2 border-slate-50 dark:border-darkCard">
+                            </div>
+                            <button
+                                @click="showModal = true; sessionTitle = 'Mastering the New AI Discovery Features'; email = ''; company = ''; role = ''; success = false;"
+                                class="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-xl hover:shadow-lg transition-shadow outline-none group-hover:bg-brandIndigo group-hover:text-white">Reserve
+                                Seat</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 2 -->
+                <div
+                    class="flex flex-col sm:flex-row gap-6 p-6 bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder rounded-3xl hover:border-brandIndigo transition-colors group">
+                    <div
+                        class="w-full sm:w-48 shrink-0 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 p-6 text-white flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]">
+                        </div>
+                        <span
+                            class="text-sm font-bold uppercase tracking-widest opacity-80 mb-1 relative z-10">OCT</span>
+                        <span class="text-5xl font-extrabold mb-1 relative z-10">21</span>
+                        <span class="text-sm font-medium opacity-90 relative z-10">01:00 PM EST</span>
+                    </div>
+                    <div class="flex flex-col justify-between flex-1 py-2">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span
+                                    class="px-2 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-extrabold uppercase tracking-widest rounded flex items-center gap-1.5"><svg
+                                        class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                        </path>
+                                    </svg> Q&A Panel</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">CRO
+                                Roundtable: Forecasting with AI</h3>
+                            <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-6 line-clamp-2">Three
+                                industry-leading CROs discuss how they utilize Sales Saathi telemetry to predict
+                                quarterly closes with 95% accuracy.</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="flex -space-x-3">
+                                <img src="https://ui-avatars.com/api/?name=Tim&background=f59e0b&color=fff"
+                                    class="w-10 h-10 rounded-full border-2 border-slate-50 dark:border-darkCard">
+                                <img src="https://ui-avatars.com/api/?name=Chloe&background=10b981&color=fff"
+                                    class="w-10 h-10 rounded-full border-2 border-slate-50 dark:border-darkCard">
+                                <img src="https://ui-avatars.com/api/?name=Sam&background=8b5cf6&color=fff"
+                                    class="w-10 h-10 rounded-full border-2 border-slate-50 dark:border-darkCard">
+                            </div>
+                            <button
+                                @click="showModal = true; sessionTitle = 'CRO Roundtable: Forecasting with AI'; email = ''; company = ''; role = ''; success = false;"
+                                class="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-xl hover:shadow-lg transition-shadow outline-none group-hover:bg-brandIndigo group-hover:text-white">Reserve
+                                Seat</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Seat Reservation Modal -->
+            <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" x-cloak style="display: none;">
+                <div class="bg-white dark:bg-darkCard rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl border border-lightBorder dark:border-darkBorder relative" @click.away="showModal = false" x-transition.opacity>
+                    <button @click="showModal = false" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-900 dark:text-white transition-colors outline-none">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    
+                    <div x-show="!success">
+                        <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Reserve Your Seat</h3>
+                        <p class="text-sm text-slate-600 dark:text-zinc-400 mb-6">For: <span class="font-semibold text-brandIndigo" x-text="sessionTitle"></span></p>
+
+                        <form @submit.prevent="loading = true; setTimeout(() => { loading = false; success = true; }, 1200)">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-1">Work Email</label>
+                                    <input type="email" required x-model="email" placeholder="name@company.com" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-lightBorder dark:border-darkBorder focus:ring-2 focus:ring-brandIndigo outline-none dark:text-white transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-1">Company</label>
+                                    <input type="text" required x-model="company" placeholder="Acme Corp" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-lightBorder dark:border-darkBorder focus:ring-2 focus:ring-brandIndigo outline-none dark:text-white transition-all text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 dark:text-zinc-300 mb-1">Role <span class="text-slate-400 dark:text-zinc-500 font-normal ml-1">(Optional)</span></label>
+                                    <input type="text" x-model="role" placeholder="e.g. Account Executive" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-lightBorder dark:border-darkBorder focus:ring-2 focus:ring-brandIndigo outline-none dark:text-white transition-all text-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full mt-6 py-3.5 bg-brandIndigo text-slate-900 dark:text-white rounded-xl font-bold hover:bg-indigo-500 transition-colors flex justify-center items-center shadow-lg shadow-brandIndigo/25 outline-none">
+                                <span x-show="!loading">Confirm Reservation</span>
+                                <span x-show="loading" class="flex items-center justify-center gap-2" style="display: none;">
+                                    <svg class="animate-spin h-5 w-5 text-slate-900 dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div x-show="success" class="text-center py-6" x-transition.opacity style="display: none;">
+                        <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-500">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Seat Reserved!</h4>
+                        <p class="text-sm text-slate-600 dark:text-zinc-400 mb-6">We've sent a calendar invite to <br><span x-text="email" class="font-bold text-slate-900 dark:text-white"></span>.</p>
+                        <button @click="showModal = false; setTimeout(() => { success = false; email = ''; }, 300)" class="px-8 py-3 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-900 dark:text-white rounded-xl font-bold text-sm transition-colors outline-none">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 8: Video Coaching Center -->
+    <section id="video-coaching"
+        class="py-24 bg-slate-50 dark:bg-[#0c0c0e] border-y border-lightBorder dark:border-darkBorder relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Video Coaching
+                    Center</h2>
+                <p class="text-lg text-slate-600 dark:text-zinc-400 font-medium max-w-2xl mx-auto">Bite-sized visual
+                    walkthroughs of complex platform workflows.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Video 1 -->
+                <div class="group relative">
+                    <div
+                        class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden mb-4 shadow-sm border border-lightBorder dark:border-darkBorder">
+                        <!-- Simulated Thumbnail Image -->
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80" alt="Video Cover" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-indigo-900/60 to-purple-900/60 mix-blend-multiply group-hover:opacity-80 transition-opacity">
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div
+                                class="w-12 h-12 bg-slate-300 dark:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 group-hover:bg-white group-hover:scale-110 transition-all">
+                                <svg class="w-5 h-5 text-slate-900 dark:text-white group-hover:text-brandIndigo ml-1" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div
+                            class="absolute bottom-2 right-2 bg-black/70 backdrop-blur text-slate-900 dark:text-white text-[10px] font-bold px-2 py-1 rounded-md">
+                            04:12</div>
+                    </div>
+                    <h4
+                        class="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-brandIndigo transition-colors leading-tight">
+                        Configuring Custom CRM Webhooks</h4>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-zinc-400">12k views • 2 weeks ago</p>
+                </div>
+                <!-- Video 2 -->
+                <div class="group relative">
+                    <div
+                        class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden mb-4 shadow-sm border border-lightBorder dark:border-darkBorder">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80" alt="Video Cover" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-emerald-900/60 to-teal-900/60 mix-blend-multiply group-hover:opacity-80 transition-opacity">
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div
+                                class="w-12 h-12 bg-slate-300 dark:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 group-hover:bg-white group-hover:scale-110 transition-all">
+                                <svg class="w-5 h-5 text-slate-900 dark:text-white group-hover:text-emerald-500 ml-1" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div
+                            class="absolute bottom-2 right-2 bg-black/70 backdrop-blur text-slate-900 dark:text-white text-[10px] font-bold px-2 py-1 rounded-md">
+                            02:45</div>
+                    </div>
+                    <h4
+                        class="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-500 transition-colors leading-tight">
+                        Setting up Battlecard Triggers</h4>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-zinc-400">8.4k views • 1 month ago</p>
+                </div>
+                <!-- Video 3 -->
+                <div class="group relative">
+                    <div
+                        class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden mb-4 shadow-sm border border-lightBorder dark:border-darkBorder">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80" alt="Video Cover" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-amber-900/60 to-rose-900/60 mix-blend-multiply group-hover:opacity-80 transition-opacity">
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div
+                                class="w-12 h-12 bg-slate-300 dark:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 group-hover:bg-white group-hover:scale-110 transition-all">
+                                <svg class="w-5 h-5 text-slate-900 dark:text-white group-hover:text-amber-500 ml-1" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div
+                            class="absolute bottom-2 right-2 bg-black/70 backdrop-blur text-slate-900 dark:text-white text-[10px] font-bold px-2 py-1 rounded-md">
+                            11:03</div>
+                    </div>
+                    <h4
+                        class="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-amber-500 transition-colors leading-tight">
+                        Full Platform Walkthrough</h4>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-zinc-400">45k views • 3 months ago</p>
+                </div>
+                <!-- Video 4 -->
+                <div class="group relative">
+                    <div
+                        class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden mb-4 shadow-sm border border-lightBorder dark:border-darkBorder">
+                        <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80" alt="Video Cover" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-blue-900/60 to-cyan-900/60 mix-blend-multiply group-hover:opacity-80 transition-opacity">
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div
+                                class="w-12 h-12 bg-slate-300 dark:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 group-hover:bg-white group-hover:scale-110 transition-all">
+                                <svg class="w-5 h-5 text-slate-900 dark:text-white group-hover:text-blue-500 ml-1" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div
+                            class="absolute bottom-2 right-2 bg-black/70 backdrop-blur text-slate-900 dark:text-white text-[10px] font-bold px-2 py-1 rounded-md">
+                            06:21</div>
+                    </div>
+                    <h4
+                        class="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-500 transition-colors leading-tight">
+                        Managing User Permissions (Admin)</h4>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-zinc-400">3.2k views • 5 days ago</p>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <button
+                    class="px-6 py-3 bg-white dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:border-brandIndigo text-slate-900 dark:text-white font-bold rounded-xl shadow-sm transition-all outline-none">Browse
+                    entire library (124 videos)</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 9: Modern Product Update Changelog -->
+    <section id="changelog" class="py-24 bg-white dark:bg-darkBg relative z-10">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+                class="flex items-center justify-between mb-16 border-b border-lightBorder dark:border-darkBorder pb-6">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">Product Changelog</h2>
+                <div class="flex items-center gap-2">
+                    <span class="flex h-2.5 w-2.5 relative">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brandIndigo opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brandIndigo"></span>
+                    </span>
+                    <span class="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">V.2.4.1
+                        Live</span>
+                </div>
+            </div>
+
+            <div
+                class="space-y-8 relative before:absolute before:inset-0 before:ml-4 sm:before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-brandIndigo before:via-lightBorder dark:before:via-darkBorder before:to-transparent">
+
+                <!-- Release 1 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div
+                        class="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full border-4 border-white dark:border-darkBg bg-brandIndigo text-slate-900 dark:text-white font-bold text-xs shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-md z-10">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div class="w-[calc(100%-3rem)] md:w-[calc(50%-3rem)] p-6 rounded-2xl bg-slate-50 dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:shadow-xl transition-all ml-4 sm:ml-6 md:ml-0 cursor-pointer"
+                        @click="activeChangelogIndex = activeChangelogIndex === 1 ? null : 1">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-brandIndigo uppercase tracking-widest">Sep 24,
+                                2026</span>
+                            <span
+                                class="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-indigo-100 dark:bg-brandIndigo/20 text-brandIndigo">v2.4.1</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">LLM Engine Upgrade (Claude 3.5
+                            Integration)</h3>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-4 line-clamp-2"
+                            :class="activeChangelogIndex === 1 ? 'line-clamp-none' : ''">We've entirely swapped our base
+                            transcription reasoning engine to support the latest Claude models, resulting in 40% faster
+                            battlecard triggers during live discovery calls.</p>
+
+                        <div x-show="activeChangelogIndex === 1" x-collapse x-cloak>
+                            <ul
+                                class="space-y-2 text-sm font-medium text-slate-600 dark:text-zinc-400 border-t border-lightBorder dark:border-darkBorder pt-4 mt-2">
+                                <li class="flex items-start gap-2"><svg class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg> Added support for 15 new languages in live translation.</li>
+                                <li class="flex items-start gap-2"><svg class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg> Fixed a bug where CRM sync failed on nested custom objects.</li>
+                                <li class="flex items-start gap-2"><svg class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg> New 'Executive Summary' tab added to the post-call dashboard.</li>
+                            </ul>
+                        </div>
+                        <button
+                            class="text-xs font-bold text-brandIndigo flex items-center gap-1 mt-2 focus:outline-none"
+                            x-text="activeChangelogIndex === 1 ? 'Show less' : 'Read full release notes'"></button>
+                    </div>
+                </div>
+
+                <!-- Release 2 -->
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                    <div
+                        class="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full border-4 border-white dark:border-darkBg bg-slate-200 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 font-bold text-xs shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="w-[calc(100%-3rem)] md:w-[calc(50%-3rem)] p-6 rounded-2xl bg-white dark:bg-darkCard border border-lightBorder dark:border-darkBorder hover:shadow-xl transition-all ml-4 sm:ml-6 md:ml-0 cursor-pointer"
+                        @click="activeChangelogIndex = activeChangelogIndex === 2 ? null : 2">
+                        <div class="flex items-center justify-between mb-2">
+                            <span
+                                class="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest">Aug
+                                10, 2026</span>
+                            <span
+                                class="px-2.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">v2.3.0</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">HubSpot Bi-Directional
+                            Webhooks</h3>
+                        <p class="text-sm font-medium text-slate-600 dark:text-zinc-400 mb-4 line-clamp-2"
+                            :class="activeChangelogIndex === 2 ? 'line-clamp-none' : ''">Complete overhaul of our
+                            HubSpot integration. Changes made in Sales Saathi now instantly reflect in your CRM via
+                            real-time webhooks, eliminating the 5-minute sync delay.</p>
+
+                        <div x-show="activeChangelogIndex === 2" x-collapse x-cloak>
+                            <ul
+                                class="space-y-2 text-sm font-medium text-slate-600 dark:text-zinc-400 border-t border-lightBorder dark:border-darkBorder pt-4 mt-2">
+                                <li class="flex items-start gap-2"><svg class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg> Added OAuth 2.0 flow for easier connection.</li>
+                                <li class="flex items-start gap-2"><svg class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg> Field mapping UI redesigned for Enterprise users.</li>
+                            </ul>
+                        </div>
+                        <button
+                            class="text-xs font-bold text-brandIndigo flex items-center gap-1 mt-2 focus:outline-none"
+                            x-text="activeChangelogIndex === 2 ? 'Show less' : 'Read full release notes'"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <a href="#"
+                    class="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-zinc-400 hover:text-brandIndigo transition-colors">
+                    View complete changelog history
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 10: Multi-Channel Lead Capture Console -->
+    <section
+        class="py-24 bg-slate-50 dark:bg-[#0c0c0e] border-y border-lightBorder dark:border-darkBorder relative z-10">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+                class="bg-white dark:bg-darkCard rounded-[2.5rem] border border-lightBorder dark:border-darkBorder shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
+                <!-- Abstract Decor -->
+                <div
+                    class="absolute top-0 right-0 w-64 h-64 bg-brandIndigo/10 rounded-full blur-[80px] pointer-events-none">
+                </div>
+
+                <div class="p-10 md:p-14 md:w-3/5 flex flex-col justify-center z-10 relative">
+                    <div class="flex items-center gap-2 mb-6">
+                        <span
+                            class="px-3 py-1 bg-indigo-50 dark:bg-brandIndigo/20 text-brandIndigo text-[10px] font-extrabold uppercase tracking-widest rounded-full">Weekly
+                            Digest</span>
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-4 leading-tight">Get the 1%
+                        Edge Delivered Weekly.</h2>
+                    <p class="text-base text-slate-600 dark:text-zinc-400 font-medium mb-8">Join 45,000+ sales leaders
+                        receiving actionable AI prompts, tear-downs of winning cold emails, and exclusive template drops
+                        every Tuesday.</p>
+
+                    <form class="flex flex-col sm:flex-row gap-3" @submit.prevent="alert('Subscribed successfully!')">
+                        <input type="email" required placeholder="name@company.com"
+                            class="flex-1 px-5 py-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-lightBorder dark:border-darkBorder focus:ring-2 focus:ring-brandIndigo outline-none transition-all dark:text-white placeholder-slate-400 font-medium text-sm">
+                        <button type="submit"
+                            class="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all text-sm outline-none whitespace-nowrap">Subscribe
+                            Free</button>
+                    </form>
+                    <p class="text-xs text-slate-400 dark:text-zinc-500 font-medium mt-4">We respect your inbox. No
+                        spam, just pure signal. One-click unsubscribe.</p>
+                </div>
+
+                <!-- Community Visual Graphic -->
+                <div
+                    class="md:w-2/5 bg-slate-100 dark:bg-zinc-800/50 p-10 flex flex-col items-center justify-center border-t md:border-t-0 md:border-l border-lightBorder dark:border-darkBorder">
+                    <div class="w-full max-w-[240px] relative">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-slate-100 dark:from-[#131316] to-transparent z-10 h-full">
+                        </div>
+                        <!-- High-Fidelity Discord/Slack Mockup -->
+                        <div class="space-y-4 relative z-0 text-left font-sans w-full min-w-[260px]">
+                            <div class="flex gap-3 items-start opacity-50 transform -translate-y-2">
+                                <img src="https://i.pravatar.cc/100?img=12" class="w-7 h-7 rounded-full shadow-sm shrink-0" alt="Avatar">
+                                <div class="space-y-0.5 flex-1">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-[11px] font-bold text-slate-900 dark:text-white">Alex S.</span>
+                                        <span class="text-[9px] text-slate-400">10:42 AM</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-300 leading-snug">Does the new cold email prompt handle objections automatically?</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start opacity-80">
+                                <img src="https://i.pravatar.cc/100?img=33" class="w-7 h-7 rounded-full shadow-sm shrink-0" alt="Avatar">
+                                <div class="space-y-0.5 flex-1">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-[11px] font-bold text-slate-900 dark:text-white">Marcus T.</span>
+                                        <span class="text-[9px] text-slate-400">10:44 AM</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-zinc-300 leading-snug">Yes, you just need to map your CRM webhook to the objection node. Worked perfectly.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start opacity-100 p-2.5 bg-indigo-50/80 dark:bg-brandIndigo/10 rounded-lg border border-indigo-100 dark:border-brandIndigo/20 relative -mx-2 shadow-sm transform translate-y-1">
+                                <div class="w-7 h-7 rounded-full bg-brandIndigo shrink-0 flex items-center justify-center shadow-sm">
+                                    <svg class="w-4 h-4 text-slate-900 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <div class="space-y-1 flex-1 pt-0.5">
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-[11px] font-bold text-brandIndigo dark:text-indigo-400">Saathi Bot</span>
+                                        <span class="px-1.5 py-0.5 rounded-[4px] text-[8px] font-extrabold bg-indigo-200 dark:bg-brandIndigo/40 text-indigo-700 dark:text-indigo-100 tracking-wider">APP</span>
+                                        <span class="text-[9px] text-slate-400">10:45 AM</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-800 dark:text-zinc-200 leading-snug">Exactly! I've just dropped the new webhook integration template in <span class="text-brandIndigo hover:underline cursor-pointer">#resources</span>. Check it out! 🚀</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900 dark:text-white mt-8 mb-2 z-20 relative">Exclusive
+                        Community</p>
+                    <p class="text-xs font-medium text-slate-500 dark:text-zinc-400 text-center z-20 relative">
+                        Subscribers gain access to our private Discord for live AMA sessions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 11: High-Impact Final Conversion Area -->
+    <section class="py-32 relative overflow-hidden">
+        <!-- Premium Linear style background -->
+        <div class="absolute inset-0 bg-slate-50 dark:bg-[#000000]"></div>
+        <!-- Dotted background removed to match reference -->
+        <div
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-brandIndigo/5 rounded-full blur-[120px] pointer-events-none">
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <h2 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-8 tracking-tight leading-tight">
+                Stop Reading. Start Closing.
+            </h2>
+            <p class="text-lg md:text-xl text-slate-500 dark:text-gray-400 mb-12 max-w-2xl mx-auto font-medium">
+                Put these resources into action immediately. Join 10,000+ forward-thinking teams scaling revenue with
+                Sales Saathi.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="auth.html"
+                    class="w-full sm:w-auto px-8 py-4 bg-brandIndigo text-white font-extrabold rounded-xl shadow-lg hover:shadow-brandIndigo/50 hover:scale-105 transition-all text-base">
+                    Start Your 14-Day Free Trial
+                </a>
+                <a href="contact.html"
+                    class="w-full sm:w-auto px-8 py-4 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white font-extrabold rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all text-base">
+                    Contact Sales
+                </a>
+            </div>
+
+            <div
+                class="mt-16 pt-12 border-t border-slate-200 dark:border-white/10 flex flex-col md:flex-row items-center justify-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="flex -space-x-3">
+                        <img class="w-10 h-10 rounded-full border-2 border-[#020617]"
+                            src="https://ui-avatars.com/api/?name=Alex&background=random" alt="User">
+                        <img class="w-10 h-10 rounded-full border-2 border-[#020617]"
+                            src="https://ui-avatars.com/api/?name=Sam&background=random" alt="User">
+                        <img class="w-10 h-10 rounded-full border-2 border-[#020617]"
+                            src="https://ui-avatars.com/api/?name=Jordan&background=random" alt="User">
+                        <img class="w-10 h-10 rounded-full border-2 border-[#020617]"
+                            src="https://ui-avatars.com/api/?name=Taylor&background=random" alt="User">
+                    </div>
+                    <div class="text-left ml-2">
+                        <div class="flex text-yellow-500 text-sm mb-0.5">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </div>
+                        <span class="text-sm font-bold text-slate-900 dark:text-white">4.9/5 from 2,000+ reviews</span>
+                    </div>
+                </div>
+                <span class="hidden md:inline text-slate-700 text-xl font-light">|</span>
+                <div class="text-slate-500 dark:text-gray-400 text-sm font-bold flex items-center gap-2">
+                    <svg class="w-5 h-5 text-brandIndigo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    No credit card required
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 12: Directory Footer Layout (Identical structure to index.html) -->
+    <footer class="bg-white dark:bg-[#0c0c0e] border-t border-lightBorder dark:border-darkBorder pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
+                <!-- Brand Col -->
+                <div class="col-span-2 md:col-span-2 flex flex-col">
+                    <a href="index.html" class="flex items-center gap-2.5 mb-6">
+                        <img src="/logo.png" alt="Sales Saathi Logo" class="h-5 w-auto object-contain" />
+                        <span class="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Sales
+                            Saathi</span>
+                    </a>
+                    <p class="text-sm text-slate-500 dark:text-zinc-400 font-medium mb-6 max-w-sm">The world's first
+                        AI-powered sales co-pilot designed to automate research, guide live discovery, and enforce CRM
+                        hygiene.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                            </svg>
+                        </a>
+                        <a href="#" class="text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                            </svg>
+                        </a>
+                        <a href="#" class="text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <!-- Links 1 -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-2">Product</h4>
+                    <a href="index.html#features"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Features</a>
+                    <a href="index.html#solutions"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Solutions</a>
+                    <a href="index.html#pricing"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Pricing</a>
+                    <a href="#changelog"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Changelog</a>
+                </div>
+                <!-- Links 2 -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-2">Resources</h4>
+                    <a href="resources.html"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Documentation</a>
+                    <a href="#featured"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Blog</a>
+                    <a href="#academy"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Academy</a>
+                    <a href="contact.html"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Help
+                        Center</a>
+                </div>
+                <!-- Links 3 -->
+                <div class="col-span-1 flex flex-col gap-3">
+                    <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-2">Company</h4>
+                    <a href="contact.html"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">About
+                        Us</a>
+                    <a href="contact.html"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Careers</a>
+                    <a href="#"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Privacy
+                        Policy</a>
+                    <a href="#"
+                        class="text-sm text-slate-500 dark:text-zinc-400 hover:text-brandIndigo dark:hover:text-slate-900 dark:text-white font-medium transition-colors">Terms
+                        of Service</a>
+                </div>
+            </div>
+            <div
+                class="pt-8 border-t border-lightBorder dark:border-darkBorder flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-slate-400 dark:text-zinc-500 font-medium">© 2026 Sales Saathi Inc. All rights
+                    reserved.</p>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 dark:text-zinc-500 font-medium">System Status:</span>
+                    <span
+                        class="flex items-center gap-1.5 text-xs font-bold text-brandEmerald bg-brandEmerald/10 px-2 py-1 rounded-full"><span
+                            class="w-1.5 h-1.5 rounded-full bg-brandEmerald"></span> 100% Operational</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Command Palette / Global Search Modal -->
+    <div x-show="searchOpen" x-cloak class="fixed inset-0 z-[100] overflow-y-auto" @keydown.escape.window="searchOpen = false" role="dialog" aria-modal="true" style="display: none;">
+        <!-- Backdrop -->
+        <div x-show="searchOpen" x-transition.opacity class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="searchOpen = false"></div>
+
+        <div class="flex min-h-screen items-start justify-center pt-24 px-4 pb-20 text-center sm:p-0">
+            <!-- Modal Panel -->
+            <div x-show="searchOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95 translate-y-4 sm:translate-y-0" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4 sm:translate-y-0" class="relative bg-white dark:bg-darkCard rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-2xl w-full border border-lightBorder dark:border-darkBorder" @click.stop>
+                
+                <div class="relative flex items-center p-4 border-b border-lightBorder dark:border-darkBorder">
+                    <svg class="w-6 h-6 text-slate-400 absolute left-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" x-model="searchInput" x-ref="searchInput" class="w-full bg-transparent border-none focus:ring-0 pl-14 pr-4 py-3 text-lg text-slate-900 dark:text-white placeholder-slate-400 outline-none" placeholder="Search anything (templates, playbooks, videos)...">
+                    <button @click="searchOpen = false" class="px-2 py-1 text-xs font-bold text-slate-500 bg-slate-100 dark:bg-zinc-800 rounded border border-slate-200 dark:border-white/10 absolute right-6 outline-none hover:text-slate-700 dark:hover:text-slate-900 dark:text-white transition-colors">ESC</button>
+                </div>
+
+                <!-- Search Results -->
+                <div class="max-h-96 overflow-y-auto p-4 scrollbar-hide">
+                    <!-- Default State (Empty Input) -->
+                    <div x-show="searchInput.length === 0" class="text-center py-10">
+                        <div class="w-16 h-16 bg-slate-100 dark:bg-zinc-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <p class="text-slate-500 dark:text-zinc-400 text-sm font-medium">Start typing to search across the Sales Saathi library...</p>
+                    </div>
+
+                    <!-- Filtered Results Simulation -->
+                    <div x-show="searchInput.length > 0">
+                        <h4 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-3 px-3">Top Results</h4>
+                        
+                        <div class="space-y-1">
+                            <!-- Result 1 -->
+                            <a href="#templates" @click="searchOpen = false" class="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors group">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-brandIndigo/10 text-brandIndigo flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-brandIndigo transition-colors">Cold Email Outreach Sequence</h5>
+                                    <p class="text-xs text-slate-500">Template Library • B2B Sales</p>
+                                </div>
+                            </a>
+
+                            <!-- Result 2 -->
+                            <a href="#playbooks" @click="searchOpen = false" class="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors group">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">Handling Price Objections</h5>
+                                    <p class="text-xs text-slate-500">Sales Playbooks • Enterprise</p>
+                                </div>
+                            </a>
+                            
+                            <!-- Result 3 -->
+                            <a href="#video-coaching" @click="searchOpen = false" class="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors group">
+                                <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors">Configuring Custom CRM Webhooks</h5>
+                                    <p class="text-xs text-slate-500">Video Coaching Center • Integration</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 bg-slate-50 dark:bg-[#131316] border-t border-lightBorder dark:border-darkBorder flex items-center justify-between">
+                    <div class="flex gap-4">
+                        <span class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                            <span class="px-1.5 py-0.5 rounded border border-slate-300 dark:border-white/20">↑</span>
+                            <span class="px-1.5 py-0.5 rounded border border-slate-300 dark:border-white/20">↓</span>
+                            to navigate
+                        </span>
+                        <span class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                            <span class="px-1.5 py-0.5 rounded border border-slate-300 dark:border-white/20 text-[10px]">ENTER</span>
+                            to select
+                        </span>
+                    </div>
+                    <span class="text-xs font-bold text-brandIndigo">Powered by AI Search</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
